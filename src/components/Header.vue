@@ -29,7 +29,8 @@ const onSubmit = () => {
   console.log("submitted", inputValue.value);
 };
 
-const onLogoutClicked = () => {
+const onLogoutClicked = async () => {
+  await authStore.logout();
   router.replace({ name: "login" });
 };
 </script>

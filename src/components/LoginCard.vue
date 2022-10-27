@@ -13,7 +13,7 @@ const authStore = useAuthStore();
 
 const login = async () => {
   try {
-    // TODO login logic
+    await authStore.login(emailRef.value, passwordRef.value);
     router.replace({ name: "home" });
   } catch (error) {
     if (error instanceof Error) {
@@ -62,6 +62,7 @@ const login = async () => {
               class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
               placeholder="name@company.com"
               required
+              v-model="emailRef"
             />
           </div>
           <div>
@@ -77,6 +78,7 @@ const login = async () => {
               placeholder="••••••••"
               class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
               required
+              v-model="passwordRef"
             />
           </div>
           <div class="flex items-center justify-between">
