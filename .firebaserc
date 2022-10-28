@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "votify-4a185"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }
