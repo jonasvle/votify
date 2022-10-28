@@ -32,11 +32,11 @@ const login = async () => {
     </h1>
     <div class="w-full bg-white rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0">
       <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-        <h1
+        <h2
           class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl"
         >
           Sign in
-        </h1>
+        </h2>
         <div
           v-if="errorRef"
           class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"
