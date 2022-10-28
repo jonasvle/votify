@@ -3,14 +3,15 @@ import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyC1-J-96tdW_XqEQerVL9_20tXd6KNT2Fc",
+  authDomain: "votify-4a185.firebaseapp.com",
+  databaseURL:
+    "https://votify-4a185-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "votify-4a185",
+  storageBucket: "votify-4a185.appspot.com",
+  messagingSenderId: "357828947524",
+  appId: "1:357828947524:web:1b4933472d3d4956395611",
+  measurementId: "G-023ZX1QDWV",
 };
 
 const app = initializeApp(firebaseConfig);
