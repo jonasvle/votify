@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import VoteTable from "@/components/VoteTable.vue";
+import VoteTable from "@/components/VoteTable/VoteTable.vue";
 </script>
 
 <template>
