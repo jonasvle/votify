@@ -32,13 +32,13 @@ const router = createRouter({
         {
           path: "",
           name: "home",
-          component: () => import("@/components/HomeContainer.vue"),
+          component: () => import("@/views/HomeView.vue"),
           meta: { title: "Home" },
         },
         {
           path: "members",
           name: "members",
-          component: () => import("@/components/MembersContainer.vue"),
+          component: () => import("@/views/MembersView.vue"),
           meta: { title: "Members" },
         },
       ],
@@ -51,7 +51,7 @@ const router = createRouter({
         {
           path: "login",
           name: "login",
-          component: () => import("@/components/LoginCard.vue"),
+          component: () => import("@/views/LoginView.vue"),
           meta: { title: "Login" },
         },
       ],

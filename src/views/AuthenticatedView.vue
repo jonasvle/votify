@@ -4,7 +4,7 @@ import Sidebar from "@/components/Sidebar.vue";
 
 <template>
   <Sidebar />
-  <section class="w-full">
+  <section class="w-full bg-gray-50">
     <main>
       <router-view />
     </main>
