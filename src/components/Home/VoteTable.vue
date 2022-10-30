@@ -5,55 +5,73 @@ import type { Ref } from "vue";
 import DropdownButton from "@/components/DropdownButton.vue";
 import DropdownButtonItem from "@/components/DropdownButtonItem.vue";
 import Search from "@/components/Search.vue";
-import VoteTableRow from "@/components/VoteTable/VoteTableRow.vue";
-import VoteEditModal from "@/components/VoteTable/VoteEditModal.vue";
-import { STATUS, type Vote } from "@/common/interfaces";
+import VoteTableRow from "@/components/Home/VoteTableRow.vue";
+import VoteEditModal from "@/components/Home/VoteEditModal.vue";
+import { STATUS, TYPE, type Vote } from "@/common/interfaces";
 
 const votes: Vote[] = [
   {
     name: "Vote 3",
     creationDate: new Date(2022, 2, 29),
     status: STATUS.CREATED,
+    type: TYPE.SINGLE,
+    options: [],
   },
   {
     name: "Vote 2",
     creationDate: new Date(2022, 9, 28),
     status: STATUS.ACTIVE,
+    type: TYPE.SINGLE,
+    options: [],
   },
   {
     name: "Vote 1",
     creationDate: new Date(2018, 9, 27),
     status: STATUS.CLOSED,
+    type: TYPE.SINGLE,
+    options: [],
   },
   {
     name: "abc",
     creationDate: new Date(2022, 9, 29),
     status: STATUS.CREATED,
+    type: TYPE.SINGLE,
+    options: [],
   },
   {
     name: "def",
     creationDate: new Date(2022, 9, 28),
     status: STATUS.ACTIVE,
+    type: TYPE.SINGLE,
+    options: [],
   },
   {
     name: "ghi",
     creationDate: new Date(2022, 9, 27),
     status: STATUS.CLOSED,
+    type: TYPE.SINGLE,
+    options: [],
   },
   {
     name: "123",
     creationDate: new Date(2021, 2, 14),
     status: STATUS.CLOSED,
+    type: TYPE.SINGLE,
+    options: [],
   },
   {
     name: "456",
     creationDate: new Date(2021, 2, 14),
     status: STATUS.CLOSED,
+    type: TYPE.SINGLE,
+    options: [],
   },
   {
     name: "789",
     creationDate: new Date(2021, 2, 14),
     status: STATUS.CLOSED,
+    type: TYPE.SINGLE,
+    options: [],
   },
 ];
 

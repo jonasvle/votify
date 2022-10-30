@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import VoteTable from "@/components/VoteTable/VoteTable.vue";
+import { ref, type Ref } from "vue";
+
+import VoteTable from "@/components/Home/VoteTable.vue";
+import VoteCreateModal from "@/components/Home/VoteCreateModal.vue";
+
+const voteCreateModalRef: Ref<typeof VoteCreateModal | null> = ref(null);
+
+const openCreateModal = () => {
+  voteCreateModalRef.value?.openModal();
+};
 </script>
 
 <template>
@@ -10,11 +19,14 @@ import VoteTable from "@/components/VoteTable/VoteTable.vue";
       </h2>
       <button
         type="button"
-        class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 focus:outline-none"
+        class="inline-flex items-center px-5 py-2.5 mb-auto text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 focus:outline-none"
+        @click="openCreateModal"
       >
-        + Add new vote
+        <font-awesome-icon class="w-5 h-5 mr-2 -ml-1" icon="fa-solid fa-plus" />
+        Add new vote
       </button>
     </section>
     <VoteTable />
+    <VoteCreateModal ref="voteCreateModalRef" />
   </div>
 </template>
