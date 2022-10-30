@@ -1,7 +1,17 @@
 <script setup lang="ts">
+import { ref } from "vue";
+
 defineProps({
   placeholder: String,
 });
+
+const emit = defineEmits(["valueChanged"]);
+
+const searchValue = ref("");
+
+const onKeyup = () => {
+  emit("valueChanged", searchValue.value);
+};
 </script>
 
 <template>
@@ -17,5 +27,7 @@ defineProps({
     type="search"
     class="block p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 focus:ring-primary-500 focus:border-primary-500 focus-visible:outline-none"
     :placeholder="placeholder"
+    v-model="searchValue"
+    @keyup="onKeyup"
   />
 </template>

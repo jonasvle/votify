@@ -57,24 +57,36 @@ const votes: Vote[] = [
   },
 ];
 
+const searchBy = ref("");
+
+const searchTable = (searchValue: string) => {
+  searchBy.value = searchValue;
+};
+
 const currentSort = ref("creationDate");
 const currentSortDir = ref(-1); // -1 = descending ; 1 = ascending
 
 const sortedVotes = computed(() => {
-  return votes.slice().sort((voteA, voteB) => {
-    const key = currentSort.value as keyof Vote;
-    if (currentSort.value === "creationDate") {
+  return votes
+    .filter((vote) => {
       return (
-        ((voteA[key] as Date).getTime() - (voteB[key] as Date).getTime()) *
-        currentSortDir.value
+        vote.name.toLowerCase().indexOf(searchBy.value.toLowerCase()) != -1
       );
-    } else {
-      return (
-        (voteA[key] as string).localeCompare(voteB[key] as string) *
-        currentSortDir.value
-      );
-    }
-  });
+    })
+    .sort((voteA, voteB) => {
+      const key = currentSort.value as keyof Vote;
+      if (currentSort.value === "creationDate") {
+        return (
+          ((voteA[key] as Date).getTime() - (voteB[key] as Date).getTime()) *
+          currentSortDir.value
+        );
+      } else {
+        return (
+          (voteA[key] as string).localeCompare(voteB[key] as string) *
+          currentSortDir.value
+        );
+      }
+    });
 });
 
 const sort = (column: string) => {
@@ -121,7 +133,7 @@ const updateChecked = (newStatus: boolean) => {
         <DropdownButtonItem important>Delete</DropdownButtonItem>
       </DropdownButton>
       <div class="relative">
-        <Search placeholder="Search for votes" />
+        <Search placeholder="Search for votes" @value-changed="searchTable" />
       </div>
     </div>
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
