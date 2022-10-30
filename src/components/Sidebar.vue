@@ -25,7 +25,7 @@ const onLogoutClicked = async () => {
 </script>
 
 <template>
-  <aside class="flex h-full" aria-label="Sidebar">
+  <aside class="fixed top-0 left-0 flex h-full" aria-label="Sidebar">
     <div
       class="w-64 h-full px-3 py-5 overflow-y-auto bg-white border-r border-gray-200"
     >
