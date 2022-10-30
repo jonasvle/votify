@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import type { Ref } from "vue";
 
 import DropdownButton from "@/components/DropdownButton.vue";
@@ -12,7 +12,7 @@ import { STATUS, type Vote } from "@/common/interfaces";
 const votes: Vote[] = [
   {
     name: "Vote 3",
-    creationDate: new Date(2022, 9, 29),
+    creationDate: new Date(2022, 2, 29),
     status: STATUS.CREATED,
   },
   {
@@ -22,10 +22,79 @@ const votes: Vote[] = [
   },
   {
     name: "Vote 1",
+    creationDate: new Date(2018, 9, 27),
+    status: STATUS.CLOSED,
+  },
+  {
+    name: "abc",
+    creationDate: new Date(2022, 9, 29),
+    status: STATUS.CREATED,
+  },
+  {
+    name: "def",
+    creationDate: new Date(2022, 9, 28),
+    status: STATUS.ACTIVE,
+  },
+  {
+    name: "ghi",
     creationDate: new Date(2022, 9, 27),
     status: STATUS.CLOSED,
   },
+  {
+    name: "123",
+    creationDate: new Date(2021, 2, 14),
+    status: STATUS.CLOSED,
+  },
+  {
+    name: "456",
+    creationDate: new Date(2021, 2, 14),
+    status: STATUS.CLOSED,
+  },
+  {
+    name: "789",
+    creationDate: new Date(2021, 2, 14),
+    status: STATUS.CLOSED,
+  },
 ];
+
+const currentSort = ref("creationDate");
+const currentSortDir = ref(-1); // -1 = descending ; 1 = ascending
+
+const sortedVotes = computed(() => {
+  return votes.slice().sort((voteA, voteB) => {
+    const key = currentSort.value as keyof Vote;
+    if (currentSort.value === "creationDate") {
+      return (
+        ((voteA[key] as Date).getTime() - (voteB[key] as Date).getTime()) *
+        currentSortDir.value
+      );
+    } else {
+      return (
+        (voteA[key] as string).localeCompare(voteB[key] as string) *
+        currentSortDir.value
+      );
+    }
+  });
+});
+
+const sort = (column: string) => {
+  if (column === currentSort.value) {
+    currentSortDir.value = -currentSortDir.value;
+  } else {
+    currentSortDir.value = 1;
+  }
+  currentSort.value = column;
+};
+
+const getSortIcon = (column: string) => {
+  if (column === currentSort.value) {
+    return currentSortDir.value < 0
+      ? "fa-solid fa-sort-down"
+      : "fa-solid fa-sort-up";
+  } else {
+    return "fa-solid fa-sort";
+  }
+};
 
 const voteEditModalRef: Ref<typeof VoteEditModal | null> = ref(null);
 
@@ -70,10 +139,10 @@ const updateChecked = (newStatus: boolean) => {
             <th scope="col" class="px-6 py-3">
               <div class="flex items-center">
                 Name
-                <button>
+                <button @click="sort('name')">
                   <font-awesome-icon
                     class="w-3 h-3 ml-1"
-                    icon="fa-solid fa-sort"
+                    :icon="getSortIcon('name')"
                   />
                 </button>
               </div>
@@ -81,10 +150,10 @@ const updateChecked = (newStatus: boolean) => {
             <th scope="col" class="px-6 py-3">
               <div class="flex items-center">
                 Creation date
-                <button>
+                <button @click="sort('creationDate')">
                   <font-awesome-icon
                     class="w-3 h-3 ml-1"
-                    icon="fa-solid fa-sort-down"
+                    :icon="getSortIcon('creationDate')"
                   />
                 </button>
               </div>
@@ -92,10 +161,10 @@ const updateChecked = (newStatus: boolean) => {
             <th scope="col" class="px-6 py-3">
               <div class="flex items-center">
                 Status
-                <button>
+                <button @click="sort('status')">
                   <font-awesome-icon
                     class="w-3 h-3 ml-1"
-                    icon="fa-solid fa-sort-up"
+                    :icon="getSortIcon('status')"
                   />
                 </button>
               </div>
@@ -105,7 +174,7 @@ const updateChecked = (newStatus: boolean) => {
         </thead>
         <tbody>
           <VoteTableRow
-            v-for="vote in votes"
+            v-for="vote in sortedVotes"
             :key="vote.name"
             :vote="vote"
             @checked-changed="updateChecked"
