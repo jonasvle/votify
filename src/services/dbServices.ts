@@ -15,10 +15,14 @@ export const createVote = async (vote: Vote) => {
       creationDate: vote.creationDate.getTime(),
       status: vote.status,
       type: vote.type,
-    }).then((response) => {
-      console.log(response, newVoteRef.key);
+    }).then(() => {
+      const optionRef = ref(database, `options/${newVoteRef.key}`);
+      vote.options.forEach((option) => {
+        const newOptionRef = push(optionRef);
+        set(newOptionRef, {
+          label: option,
+        });
+      });
     });
-
-    // TODO push options
   }
 };
