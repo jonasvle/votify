@@ -22,7 +22,6 @@ export const useAuthStore = defineStore({
       const response = await signInWithEmailAndPassword(auth, email, password);
       if (response) {
         this.user = response.user;
-        console.log("setting to ", response.user);
       } else {
         throw new Error("login failed");
       }

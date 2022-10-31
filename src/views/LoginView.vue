@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { useAuthStore } from "@/stores/auth";
+import InlineErrorNotification from "@/components/InlineErrorNotification.vue";
 
 const emailRef = ref("");
 const passwordRef = ref("");
@@ -37,17 +38,7 @@ const login = async () => {
         >
           Sign in
         </h2>
-        <div
-          v-if="errorRef"
-          class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"
-          role="alert"
-        >
-          <font-awesome-icon
-            class="mr-2"
-            icon="fa-solid fa-circle-exclamation"
-          />
-          {{ errorRef }}
-        </div>
+        <InlineErrorNotification class="mb-4" :error="errorRef" />
         <form class="space-y-4 md:space-y-6" @submit.prevent="login">
           <div>
             <label

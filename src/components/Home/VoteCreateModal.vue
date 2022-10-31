@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, type Ref } from "vue";
 
+import InlineErrorNotification from "@/components/InlineErrorNotification.vue";
 import { STATUS, TYPE, type Vote } from "@/common/interfaces";
 import { getDateString } from "@/common/utils";
+import { createVote } from "@/services/dbServices";
 
 const showModal = ref(false);
 
@@ -16,9 +18,12 @@ const closeModal = () => {
 
 const nrOfOptions = ref(2);
 
+const loadingRef = ref(false);
+const errorRef = ref("");
 const formRef: Ref<HTMLFormElement | null> = ref(null);
 
 const onSubmit = (event: Event) => {
+  loadingRef.value = true;
   const formData = new FormData(event.target as HTMLFormElement);
   const options: string[] = [];
   for (let [key, value] of formData.entries()) {
@@ -34,7 +39,18 @@ const onSubmit = (event: Event) => {
     type: formData.get("type") as TYPE,
     options: options,
   };
-  console.log(newVote);
+
+  createVote(newVote)
+    .then(() => {
+      (event.target as HTMLFormElement).reset();
+      loadingRef.value = false;
+      errorRef.value = "";
+      closeModal();
+    })
+    .catch(() => {
+      loadingRef.value = false;
+      errorRef.value = "Failed to create a new vote. Please try again later.";
+    });
 };
 
 defineExpose({
@@ -178,6 +194,7 @@ defineExpose({
               + Add option
             </button>
             <button
+              v-if="nrOfOptions > 2"
               type="button"
               class="px-3 py-2 text-xs font-medium text-center text-red-700 border border-red-700 rounded-lg hover:text-white hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300"
               @click="nrOfOptions--"
@@ -185,15 +202,29 @@ defineExpose({
               - Remove option
             </button>
           </div>
-          <div
-            class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b"
-          >
-            <button
-              type="submit"
-              class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-            >
-              Create
-            </button>
+          <div class="p-6 space-y-4 border-t border-gray-200">
+            <InlineErrorNotification :error="errorRef" />
+            <div class="flex items-center space-x-2 rounded-b">
+              <button
+                v-if="!loadingRef"
+                type="submit"
+                class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+              >
+                Create
+              </button>
+              <button
+                v-else
+                disabled
+                type="button"
+                class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center"
+              >
+                <font-awesome-icon
+                  class="inline w-4 h-4 mr-3 text-white animate-spin"
+                  icon="fa-solid fa-spinner"
+                />
+                Loading...
+              </button>
+            </div>
           </div>
         </form>
       </div>
