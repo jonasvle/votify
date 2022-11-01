@@ -1,79 +1,40 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import type { Ref } from "vue";
+import { onValue, ref as dbRef } from "@firebase/database";
 
 import DropdownButton from "@/components/DropdownButton.vue";
 import DropdownButtonItem from "@/components/DropdownButtonItem.vue";
 import Search from "@/components/Search.vue";
 import VoteTableRow from "@/components/Home/VoteTableRow.vue";
 import VoteEditModal from "@/components/Home/VoteEditModal.vue";
-import { STATUS, TYPE, type Vote } from "@/common/interfaces";
+import type { STATUS, TYPE, Vote } from "@/common/interfaces";
+import { database } from "@/configs/firebase";
+import { useAuthStore } from "@/stores/auth";
 
-const votes: Vote[] = [
-  {
-    name: "Vote 3",
-    creationDate: new Date(2022, 2, 29),
-    status: STATUS.CREATED,
-    type: TYPE.SINGLE,
-    options: [],
-  },
-  {
-    name: "Vote 2",
-    creationDate: new Date(2022, 9, 28),
-    status: STATUS.ACTIVE,
-    type: TYPE.SINGLE,
-    options: [],
-  },
-  {
-    name: "Vote 1",
-    creationDate: new Date(2018, 9, 27),
-    status: STATUS.CLOSED,
-    type: TYPE.SINGLE,
-    options: [],
-  },
-  {
-    name: "abc",
-    creationDate: new Date(2022, 9, 29),
-    status: STATUS.CREATED,
-    type: TYPE.SINGLE,
-    options: [],
-  },
-  {
-    name: "def",
-    creationDate: new Date(2022, 9, 28),
-    status: STATUS.ACTIVE,
-    type: TYPE.SINGLE,
-    options: [],
-  },
-  {
-    name: "ghi",
-    creationDate: new Date(2022, 9, 27),
-    status: STATUS.CLOSED,
-    type: TYPE.SINGLE,
-    options: [],
-  },
-  {
-    name: "123",
-    creationDate: new Date(2021, 2, 14),
-    status: STATUS.CLOSED,
-    type: TYPE.SINGLE,
-    options: [],
-  },
-  {
-    name: "456",
-    creationDate: new Date(2021, 2, 14),
-    status: STATUS.CLOSED,
-    type: TYPE.SINGLE,
-    options: [],
-  },
-  {
-    name: "789",
-    creationDate: new Date(2021, 2, 14),
-    status: STATUS.CLOSED,
-    type: TYPE.SINGLE,
-    options: [],
-  },
-];
+const authStore = useAuthStore();
+
+const votes: Ref<Vote[]> = ref([]);
+
+onValue(dbRef(database, `users/${authStore.user!.uid}/votes`), (snapshot) => {
+  const voteIds = Object.keys(snapshot.val());
+  const snapshotVotes: Vote[] = [];
+  for (const i in voteIds) {
+    onValue(dbRef(database, `votes/${voteIds[i]}`), (snapshot) => {
+      const data = snapshot.val();
+      const vote: Vote = {
+        name: data.name,
+        creationDate: new Date(data.creationDate),
+        status: data.status as STATUS,
+        type: data.type as TYPE,
+      };
+      snapshotVotes.push(vote);
+      if (parseInt(i, 10) >= voteIds.length - 1) {
+        votes.value = snapshotVotes;
+      }
+    });
+  }
+});
 
 const searchBy = ref("");
 
@@ -85,26 +46,27 @@ const currentSort = ref("creationDate");
 const currentSortDir = ref(-1); // -1 = descending ; 1 = ascending
 
 const sortedVotes = computed(() => {
-  return votes
-    .filter((vote) => {
+  const filteredVotes = searchBy.value
+    ? votes.value.filter((vote) => {
+        return (
+          vote.name.toLowerCase().indexOf(searchBy.value.toLowerCase()) != -1
+        );
+      })
+    : votes.value;
+  return filteredVotes.sort((voteA, voteB) => {
+    const key = currentSort.value as keyof Vote;
+    if (currentSort.value === "creationDate") {
       return (
-        vote.name.toLowerCase().indexOf(searchBy.value.toLowerCase()) != -1
+        ((voteA[key] as Date).getTime() - (voteB[key] as Date).getTime()) *
+        currentSortDir.value
       );
-    })
-    .sort((voteA, voteB) => {
-      const key = currentSort.value as keyof Vote;
-      if (currentSort.value === "creationDate") {
-        return (
-          ((voteA[key] as Date).getTime() - (voteB[key] as Date).getTime()) *
-          currentSortDir.value
-        );
-      } else {
-        return (
-          (voteA[key] as string).localeCompare(voteB[key] as string) *
-          currentSortDir.value
-        );
-      }
-    });
+    } else {
+      return (
+        (voteA[key] as string).localeCompare(voteB[key] as string) *
+        currentSortDir.value
+      );
+    }
+  });
 });
 
 const sort = (column: string) => {
@@ -205,7 +167,7 @@ const updateChecked = (newStatus: boolean) => {
         <tbody>
           <VoteTableRow
             v-for="vote in sortedVotes"
-            :key="vote.name"
+            :key="vote.creationDate.getTime()"
             :vote="vote"
             @checked-changed="updateChecked"
             @edit-clicked="openVoteEditModal"

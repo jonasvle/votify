@@ -18,5 +18,5 @@ export interface Vote {
   creationDate: Date;
   status: STATUS;
   type: TYPE;
-  options: string[];
+  options?: string[];
 }

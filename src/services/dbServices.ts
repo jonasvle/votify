@@ -16,10 +16,8 @@ export const createVote = async (vote: Vote) => {
       await set(newOptionRef, {
         label: option,
       });
-      console.log("pushed option", option);
     }
 
-    console.log("starting new vote");
     const newVoteRef = push(ref(database, "votes"));
     await set(newVoteRef, {
       name: vote.name,
