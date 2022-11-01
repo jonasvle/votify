@@ -8,21 +8,35 @@ const authStore = useAuthStore();
 
 export const createVote = async (vote: Vote) => {
   if (authStore.user?.uid) {
-    const votesRef = ref(database, `users/${authStore.user.uid}/votes`);
-    const newVoteRef = push(votesRef);
-    return set(newVoteRef, {
+    const optionIds: string[] = [];
+    const optionsRef = ref(database, "options");
+    for (const option in vote.options) {
+      const newOptionRef = push(optionsRef);
+      optionIds.push(newOptionRef.key!);
+      await set(newOptionRef, {
+        label: option,
+      });
+      console.log("pushed option", option);
+    }
+
+    console.log("starting new vote");
+    const newVoteRef = push(ref(database, "votes"));
+    await set(newVoteRef, {
       name: vote.name,
       creationDate: vote.creationDate.getTime(),
       status: vote.status,
       type: vote.type,
-    }).then(() => {
-      const optionRef = ref(database, `options/${newVoteRef.key}`);
-      vote.options.forEach((option) => {
-        const newOptionRef = push(optionRef);
-        set(newOptionRef, {
-          label: option,
-        });
-      });
     });
+    for (const optionId in optionIds) {
+      await set(
+        ref(database, `votes/${newVoteRef.key}/options/${optionId}`),
+        true
+      );
+    }
+
+    return set(
+      ref(database, `users/${authStore.user.uid}/votes/${newVoteRef.key}`),
+      true
+    );
   }
 };
