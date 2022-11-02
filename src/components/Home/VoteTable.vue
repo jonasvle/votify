@@ -14,25 +14,22 @@ import { useAuthStore } from "@/stores/auth";
 
 const authStore = useAuthStore();
 
-const votes: Ref<Vote[]> = ref([]);
+const votes: Ref<{ [key: string]: Vote }> = ref({});
 
 onValue(dbRef(database, `users/${authStore.user!.uid}/votes`), (snapshot) => {
   if (snapshot.size > 0) {
     const voteIds = Object.keys(snapshot.val());
-    const snapshotVotes: Vote[] = [];
     for (const i in voteIds) {
       onValue(dbRef(database, `votes/${voteIds[i]}`), (snapshot) => {
         const data = snapshot.val();
         const vote: Vote = {
+          id: voteIds[i], // TODO fix this
           name: data.name,
           creationDate: new Date(data.creationDate),
           status: data.status as STATUS,
           type: data.type as TYPE,
         };
-        snapshotVotes.push(vote);
-        if (parseInt(i, 10) >= voteIds.length - 1) {
-          votes.value = snapshotVotes;
-        }
+        votes.value[voteIds[i]] = vote;
       });
     }
   }
@@ -48,13 +45,15 @@ const currentSort = ref("creationDate");
 const currentSortDir = ref(-1); // -1 = descending ; 1 = ascending
 
 const sortedVotes = computed(() => {
+  const votesArray = Object.keys(votes.value).map((key) => votes.value[key]);
+
   const filteredVotes = searchBy.value
-    ? votes.value.filter((vote) => {
+    ? votesArray.filter((vote) => {
         return (
           vote.name.toLowerCase().indexOf(searchBy.value.toLowerCase()) != -1
         );
       })
-    : votes.value;
+    : votesArray;
   return filteredVotes.sort((voteA, voteB) => {
     const key = currentSort.value as keyof Vote;
     if (currentSort.value === "creationDate") {

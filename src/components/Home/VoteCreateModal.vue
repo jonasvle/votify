@@ -13,18 +13,21 @@ const openModal = () => {
 };
 
 const closeModal = () => {
+  isLoading.value = false;
+  error.value = "";
+  formRef.value!.reset();
   showModal.value = false;
 };
 
 const nrOfOptions = ref(2);
 
-const loadingRef = ref(false);
-const errorRef = ref("");
+const isLoading = ref(false);
+const error = ref("");
 const formRef: Ref<HTMLFormElement | null> = ref(null);
 
-const onSubmit = (event: Event) => {
-  loadingRef.value = true;
-  const formData = new FormData(event.target as HTMLFormElement);
+const onSubmit = () => {
+  isLoading.value = true;
+  const formData = new FormData(formRef.value!);
   const options: string[] = [];
   for (let [key, value] of formData.entries()) {
     if ((key as string).startsWith("option")) {
@@ -42,14 +45,11 @@ const onSubmit = (event: Event) => {
 
   createVote(newVote)
     .then(() => {
-      (event.target as HTMLFormElement).reset();
-      loadingRef.value = false;
-      errorRef.value = "";
       closeModal();
     })
     .catch(() => {
-      loadingRef.value = false;
-      errorRef.value = "Failed to create a new vote. Please try again later.";
+      isLoading.value = false;
+      error.value = "Failed to create a new vote. Please try again later.";
     });
 };
 
@@ -203,10 +203,10 @@ defineExpose({
             </button>
           </div>
           <div class="p-6 space-y-4 border-t border-gray-200">
-            <InlineErrorNotification :error="errorRef" />
+            <InlineErrorNotification :error="error" />
             <div class="flex items-center space-x-2 rounded-b">
               <button
-                v-if="!loadingRef"
+                v-if="!isLoading"
                 type="submit"
                 class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
               >

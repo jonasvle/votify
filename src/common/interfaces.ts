@@ -14,6 +14,7 @@ export enum TYPE {
 }
 
 export interface Vote {
+  id?: string;
   name: string;
   creationDate: Date;
   status: STATUS;
