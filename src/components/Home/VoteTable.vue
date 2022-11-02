@@ -177,6 +177,12 @@ const updateChecked = (newStatus: boolean) => {
           />
         </tbody>
       </table>
+      <div
+        v-if="sortedVotes.length < 1"
+        class="flex items-center justify-center"
+      >
+        <p class="m-4 text-gray-500">No votes available</p>
+      </div>
     </div>
     <VoteEditModal ref="voteEditModalRef" />
   </div>
