@@ -17,22 +17,24 @@ const authStore = useAuthStore();
 const votes: Ref<Vote[]> = ref([]);
 
 onValue(dbRef(database, `users/${authStore.user!.uid}/votes`), (snapshot) => {
-  const voteIds = Object.keys(snapshot.val());
-  const snapshotVotes: Vote[] = [];
-  for (const i in voteIds) {
-    onValue(dbRef(database, `votes/${voteIds[i]}`), (snapshot) => {
-      const data = snapshot.val();
-      const vote: Vote = {
-        name: data.name,
-        creationDate: new Date(data.creationDate),
-        status: data.status as STATUS,
-        type: data.type as TYPE,
-      };
-      snapshotVotes.push(vote);
-      if (parseInt(i, 10) >= voteIds.length - 1) {
-        votes.value = snapshotVotes;
-      }
-    });
+  if (snapshot.size > 0) {
+    const voteIds = Object.keys(snapshot.val());
+    const snapshotVotes: Vote[] = [];
+    for (const i in voteIds) {
+      onValue(dbRef(database, `votes/${voteIds[i]}`), (snapshot) => {
+        const data = snapshot.val();
+        const vote: Vote = {
+          name: data.name,
+          creationDate: new Date(data.creationDate),
+          status: data.status as STATUS,
+          type: data.type as TYPE,
+        };
+        snapshotVotes.push(vote);
+        if (parseInt(i, 10) >= voteIds.length - 1) {
+          votes.value = snapshotVotes;
+        }
+      });
+    }
   }
 });
 
