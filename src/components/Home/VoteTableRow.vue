@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, type PropType } from "vue";
+import type { PropType } from "vue";
 
 import { STATUS, type Vote } from "@/common/interfaces";
 import { getDateString } from "@/common/utils";
@@ -16,10 +16,13 @@ const props = defineProps({
 
 const emit = defineEmits(["checkedChanged", "editClicked", "viewClicked"]);
 
-const isChecked = ref(false);
-watch(isChecked, (newStatus) => {
-  emit("checkedChanged", newStatus);
-});
+const checkedChanged = (event: Event) => {
+  emit(
+    "checkedChanged",
+    props.vote.id,
+    (event.target as HTMLInputElement).checked
+  );
+};
 
 const statusColor = () => {
   switch (props.vote.status) {
@@ -40,7 +43,8 @@ const statusColor = () => {
         <input
           type="checkbox"
           class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2"
-          v-model="isChecked"
+          :checked="checked"
+          @click="checkedChanged"
         />
       </div>
     </td>

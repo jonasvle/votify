@@ -28,6 +28,7 @@ onValue(dbRef(database, `users/${authStore.user!.uid}/votes`), (snapshot) => {
           creationDate: new Date(data.creationDate),
           status: data.status as STATUS,
           type: data.type as TYPE,
+          selected: false,
         };
         votes.value[voteIds[i]] = vote;
       });
@@ -99,9 +100,35 @@ const openVoteViewModal = () => {
   console.log("opening view modal...");
 };
 
-const updateChecked = (newStatus: boolean) => {
-  console.log(newStatus);
+const selectAllRef = ref(null);
+
+const updateSelected = (voteId: string, newStatus: boolean) => {
+  votes.value[voteId].selected = newStatus;
+  if (!newStatus) {
+    (selectAllRef.value! as HTMLInputElement).indeterminate = true;
+  } else {
+    if (Object.keys(votes.value).length === selectedVotes.value.length) {
+      (selectAllRef.value! as HTMLInputElement).checked = true;
+    }
+  }
 };
+
+const selectAll = (event: Event) => {
+  const isSelected = (event.target as HTMLInputElement).checked;
+  for (const id in votes.value) {
+    votes.value[id].selected = isSelected;
+  }
+};
+
+const selectedVotes = computed(() => {
+  const selectedVotes: string[] = [];
+  for (const id in votes.value) {
+    if (votes.value[id].selected === true) {
+      selectedVotes.push(id);
+    }
+  }
+  return selectedVotes;
+});
 </script>
 
 <template>
@@ -124,8 +151,10 @@ const updateChecked = (newStatus: boolean) => {
             <th scope="col" class="p-4">
               <div class="flex items-center">
                 <input
+                  ref="selectAllRef"
                   type="checkbox"
                   class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2"
+                  @click="selectAll"
                 />
               </div>
             </th>
@@ -168,9 +197,10 @@ const updateChecked = (newStatus: boolean) => {
         <tbody>
           <VoteTableRow
             v-for="vote in sortedVotes"
-            :key="vote.creationDate.getTime()"
+            :key="vote.id"
             :vote="vote"
-            @checked-changed="updateChecked"
+            :checked="vote.selected"
+            @checked-changed="updateSelected"
             @edit-clicked="openVoteEditModal"
             @view-clicked="openVoteViewModal"
           />

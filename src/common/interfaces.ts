@@ -20,4 +20,5 @@ export interface Vote {
   status: STATUS;
   type: TYPE;
   options?: string[];
+  selected?: boolean;
 }
