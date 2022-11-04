@@ -1,7 +1,7 @@
-import { push, ref, set, update } from "firebase/database";
+import { push, ref, set, update, remove, child, get } from "firebase/database";
 
 import { database } from "@/configs/firebase";
-import type { Vote } from "@/common/interfaces";
+import type { STATUS, Vote } from "@/common/interfaces";
 import { useAuthStore } from "@/stores/auth";
 
 const authStore = useAuthStore();
@@ -47,4 +47,27 @@ export const updateVote = async (vote: Vote) => {
     status: vote.status,
     type: vote.type,
   });
+};
+
+export const setStatus = async (voteId: string, status: STATUS) => {
+  const voteRef = ref(database, `votes/${voteId}`);
+  return update(voteRef, {
+    status: status,
+  });
+};
+
+export const deleteVote = async (voteId: string) => {
+  remove(ref(database, `users/${authStore.user!.uid}/votes/${voteId}`)).then(
+    () => {
+      const votesRef = ref(database, `votes/${voteId}`);
+      get(child(votesRef, "options")).then((snapshot) => {
+        if (snapshot.exists()) {
+          Object.keys(snapshot.val()).forEach((optionId) => {
+            remove(ref(database, `options/${optionId}`));
+          });
+          return remove(votesRef);
+        }
+      });
+    }
+  );
 };

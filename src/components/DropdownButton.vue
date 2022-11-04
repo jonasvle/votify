@@ -2,11 +2,11 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import type { Ref } from "vue";
 
-const dropdownRef: Ref<HTMLElement | null> = ref(null);
+const dropdownBtnRef: Ref<HTMLElement | null> = ref(null);
 const showDropdown = ref(false);
 
 const closeDropdown = (e: Event) => {
-  if (!dropdownRef.value?.contains(e.target as HTMLElement)) {
+  if (!dropdownBtnRef.value?.contains(e.target as HTMLElement)) {
     showDropdown.value = false;
   }
 };
@@ -21,8 +21,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="dropdownRef">
+  <div>
     <button
+      ref="dropdownBtnRef"
       @click="showDropdown = !showDropdown"
       id="dropdownActionButton"
       data-dropdown-toggle="dropdownAction"

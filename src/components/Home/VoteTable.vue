@@ -8,9 +8,11 @@ import DropdownButtonItem from "@/components/DropdownButtonItem.vue";
 import Search from "@/components/Search.vue";
 import VoteTableRow from "@/components/Home/VoteTableRow.vue";
 import VoteEditModal from "@/components/Home/VoteEditModal.vue";
-import type { STATUS, TYPE, Vote } from "@/common/interfaces";
+import PopupModal from "@/components/PopupModal.vue";
+import { STATUS, type TYPE, type Vote } from "@/common/interfaces";
 import { database } from "@/configs/firebase";
 import { useAuthStore } from "@/stores/auth";
+import { setStatus, deleteVote } from "@/services/dbServices";
 
 const authStore = useAuthStore();
 
@@ -21,16 +23,20 @@ onValue(dbRef(database, `users/${authStore.user!.uid}/votes`), (snapshot) => {
     const voteIds = Object.keys(snapshot.val());
     for (const i in voteIds) {
       onValue(dbRef(database, `votes/${voteIds[i]}`), (snapshot) => {
-        const data = snapshot.val();
-        const vote: Vote = {
-          id: voteIds[i], // TODO fix this
-          name: data.name,
-          creationDate: new Date(data.creationDate),
-          status: data.status as STATUS,
-          type: data.type as TYPE,
-          selected: false,
-        };
-        votes.value[voteIds[i]] = vote;
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const vote: Vote = {
+            id: voteIds[i],
+            name: data.name,
+            creationDate: new Date(data.creationDate),
+            status: data.status as STATUS,
+            type: data.type as TYPE,
+            selected: false,
+          };
+          votes.value[voteIds[i]] = vote;
+        } else {
+          delete votes.value[voteIds[i]];
+        }
       });
     }
   }
@@ -104,20 +110,33 @@ const selectAllRef = ref(null);
 
 const updateSelected = (voteId: string, newStatus: boolean) => {
   votes.value[voteId].selected = newStatus;
-  if (!newStatus) {
-    (selectAllRef.value! as HTMLInputElement).indeterminate = true;
-  } else {
+  const headerCheckbox = selectAllRef.value! as HTMLInputElement;
+
+  if (selectedVotes.value.length > 0) {
     if (Object.keys(votes.value).length === selectedVotes.value.length) {
-      (selectAllRef.value! as HTMLInputElement).checked = true;
+      headerCheckbox.checked = true;
+      headerCheckbox.indeterminate = false;
+    } else {
+      headerCheckbox.checked = true;
+      headerCheckbox.indeterminate = true;
     }
+  } else {
+    headerCheckbox.checked = false;
+    headerCheckbox.indeterminate = false;
   }
 };
 
-const selectAll = (event: Event) => {
-  const isSelected = (event.target as HTMLInputElement).checked;
-  for (const id in votes.value) {
-    votes.value[id].selected = isSelected;
-  }
+const selectAllClicked = (event: Event) => {
+  selectAll((event.target as HTMLInputElement).checked);
+};
+
+const selectAll = (isSelected: boolean) => {
+  Object.keys(votes.value).forEach(
+    (id) => (votes.value[id].selected = isSelected)
+  );
+  const headerCheckbox = selectAllRef.value! as HTMLInputElement;
+  headerCheckbox.checked = isSelected;
+  headerCheckbox.indeterminate = false;
 };
 
 const selectedVotes = computed(() => {
@@ -129,16 +148,51 @@ const selectedVotes = computed(() => {
   }
   return selectedVotes;
 });
+
+const activateClicked = () => {
+  selectedVotes.value.forEach((voteId) => {
+    setStatus(voteId, STATUS.ACTIVE).then(() => {
+      selectAll(false);
+    });
+  });
+};
+
+const closeClicked = () => {
+  selectedVotes.value.forEach((voteId) => {
+    setStatus(voteId, STATUS.CLOSED).then(() => {
+      selectAll(false);
+    });
+  });
+};
+
+const popupModalRef: Ref<typeof PopupModal | null> = ref(null);
+const deleteClicked = () => {
+  popupModalRef.value!.openModal();
+};
+const deleteVotes = () => {
+  selectedVotes.value.forEach((voteId) => {
+    deleteVote(voteId).then(() => {
+      popupModalRef.value!.closeModal();
+      selectAll(false);
+    });
+  });
+};
 </script>
 
 <template>
   <div>
     <div class="flex items-center justify-between py-4">
       <DropdownButton>
-        <DropdownButtonItem>Activate</DropdownButtonItem>
-        <DropdownButtonItem>Close</DropdownButtonItem>
+        <DropdownButtonItem @on-clicked="activateClicked">
+          Activate
+        </DropdownButtonItem>
+        <DropdownButtonItem @on-clicked="closeClicked">
+          Close
+        </DropdownButtonItem>
         <hr class="my-1 border-gray-100" />
-        <DropdownButtonItem important>Delete</DropdownButtonItem>
+        <DropdownButtonItem @on-clicked="deleteClicked" important>
+          Delete
+        </DropdownButtonItem>
       </DropdownButton>
       <div class="relative">
         <Search placeholder="Search for votes" @value-changed="searchTable" />
@@ -154,7 +208,7 @@ const selectedVotes = computed(() => {
                   ref="selectAllRef"
                   type="checkbox"
                   class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2"
-                  @click="selectAll"
+                  @click="selectAllClicked"
                 />
               </div>
             </th>
@@ -214,5 +268,12 @@ const selectedVotes = computed(() => {
       </div>
     </div>
     <VoteEditModal ref="voteEditModalRef" />
+    <PopupModal
+      ref="popupModalRef"
+      message="Are you sure you want to delete the selected votes?"
+      confirm="Delete"
+      cancel="Cancel"
+      @submit="deleteVotes"
+    />
   </div>
 </template>
