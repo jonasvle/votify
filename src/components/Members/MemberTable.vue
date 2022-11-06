@@ -12,7 +12,6 @@ import type { Member } from "@/common/interfaces";
 import { database } from "@/configs/firebase";
 import { useAuthStore } from "@/stores/auth";
 import { deleteMember } from "@/services/dbServices";
-import VoteCreateModal from "../Home/VoteCreateModal.vue";
 
 const authStore = useAuthStore();
 
@@ -43,7 +42,7 @@ onValue(dbRef(database, `users/${authStore.user!.uid}/members`), (snapshot) => {
 const searchBy = ref("");
 
 const searchTable = (searchValue: string) => {
-  searchBy.value = searchValue;
+  searchBy.value = searchValue.trim();
 };
 
 const currentSort = ref("lastName");
@@ -54,17 +53,15 @@ const sortedMembers = computed(() => {
     (key) => members.value[key]
   );
 
-  // TODO should be able to search on full name as well
   const filteredMembers = searchBy.value
     ? membersArray.filter((member) => {
-        return (
-          member.firstName
-            .toLowerCase()
-            .indexOf(searchBy.value.toLowerCase()) !== -1 ||
-          member.lastName
-            .toLowerCase()
-            .indexOf(searchBy.value.toLowerCase()) !== -1
-        );
+        const searchTerms = searchBy.value.split(" ");
+        return searchTerms.every((term) => {
+          return (
+            member.firstName.toLowerCase().indexOf(term.toLowerCase()) !== -1 ||
+            member.lastName.toLowerCase().indexOf(term.toLowerCase()) !== -1
+          );
+        });
       })
     : membersArray;
 
@@ -118,7 +115,7 @@ const updateSelected = (memberId: string, newStatus: boolean) => {
       headerCheckbox.indeterminate = false;
     } else {
       headerCheckbox.checked = true;
-      headerCheckbox.indeterminate = false;
+      headerCheckbox.indeterminate = true;
     }
   } else {
     headerCheckbox.checked = false;

@@ -45,7 +45,7 @@ onValue(dbRef(database, `users/${authStore.user!.uid}/votes`), (snapshot) => {
 const searchBy = ref("");
 
 const searchTable = (searchValue: string) => {
-  searchBy.value = searchValue;
+  searchBy.value = searchValue.trim();
 };
 
 const currentSort = ref("creationDate");
