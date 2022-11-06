@@ -45,7 +45,7 @@ onValue(dbRef(database, `users/${authStore.user!.uid}/votes`), (snapshot) => {
 const searchBy = ref("");
 
 const searchTable = (searchValue: string) => {
-  searchBy.value = searchValue;
+  searchBy.value = searchValue.trim();
 };
 
 const currentSort = ref("creationDate");
@@ -57,7 +57,7 @@ const sortedVotes = computed(() => {
   const filteredVotes = searchBy.value
     ? votesArray.filter((vote) => {
         return (
-          vote.name.toLowerCase().indexOf(searchBy.value.toLowerCase()) != -1
+          vote.name.toLowerCase().indexOf(searchBy.value.toLowerCase()) !== -1
         );
       })
     : votesArray;
@@ -170,6 +170,10 @@ const deleteClicked = () => {
   popupModalRef.value!.openModal();
 };
 const deleteVotes = () => {
+  if (selectedVotes.value.length < 1) {
+    popupModalRef.value!.closeModal();
+    selectAll(false);
+  }
   selectedVotes.value.forEach((voteId) => {
     deleteVote(voteId).then(() => {
       popupModalRef.value!.closeModal();
@@ -194,9 +198,7 @@ const deleteVotes = () => {
           Delete
         </DropdownButtonItem>
       </DropdownButton>
-      <div class="relative">
-        <Search placeholder="Search for votes" @value-changed="searchTable" />
-      </div>
+      <Search placeholder="Search for votes" @value-changed="searchTable" />
     </div>
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
       <table class="w-full text-sm text-left text-gray-500">

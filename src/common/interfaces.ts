@@ -22,3 +22,10 @@ export interface Vote {
   options?: string[];
   selected?: boolean;
 }
+
+export interface Member {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  selected?: boolean;
+}
