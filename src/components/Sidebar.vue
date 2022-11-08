@@ -41,9 +41,9 @@ const onLogoutClicked = async () => {
           alt="Avatar"
         />
         <h3 class="text-xl font-bold tracking-tight text-gray-900">
-          Jonas Vleminckx
+          {{ authStore.user?.displayName }}
         </h3>
-        <p class="font-light text-gray-500">vleminckx.jonas@gmail.com</p>
+        <p class="font-light text-gray-500">{{ authStore.user?.email }}</p>
         <button
           class="px-5 text-sm font-medium text-gray-900 py-2.5 bg-white border-gray-200 border rounded-lg justify-center align-center w-full inline-flex mt-5 hover:text-primary-700 focus:ring-4 focus:outline-none focus:ring-gray-200 focus:z-10"
           @click="onLogoutClicked"
