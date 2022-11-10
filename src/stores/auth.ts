@@ -40,7 +40,10 @@ export const useAuthStore = defineStore({
       );
       if (response) {
         this.user = response.user as User;
-        updateProfile(this.user, { displayName: displayName });
+        updateProfile(this.user, {
+          displayName: displayName,
+          photoURL: `https://avatars.dicebear.com/api/bottts/${displayName}.svg`,
+        });
       } else {
         throw new Error("register failed");
       }
