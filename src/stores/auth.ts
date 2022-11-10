@@ -1,5 +1,11 @@
 import { defineStore } from "pinia";
-import { signInWithEmailAndPassword, signOut, type User } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  type User,
+} from "firebase/auth";
 
 import { auth } from "@/configs/firebase";
 
@@ -24,6 +30,22 @@ export const useAuthStore = defineStore({
         this.user = response.user;
       } else {
         throw new Error("login failed");
+      }
+    },
+    async register(email: string, password: string, displayName: string) {
+      const response = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      if (response) {
+        this.user = response.user as User;
+        updateProfile(this.user, {
+          displayName: displayName,
+          photoURL: `https://avatars.dicebear.com/api/bottts/${displayName}.svg`,
+        });
+      } else {
+        throw new Error("register failed");
       }
     },
     async logout() {

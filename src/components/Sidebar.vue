@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import placeholder from "../assets/avatar.jpg";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -22,6 +23,12 @@ const onLogoutClicked = async () => {
   await authStore.logout();
   router.replace({ name: "login" });
 };
+
+const getProfileUrl = () => {
+  return authStore.user?.photoURL
+    ? new URL(authStore.user.photoURL as string).href
+    : placeholder;
+};
 </script>
 
 <template>
@@ -37,13 +44,13 @@ const onLogoutClicked = async () => {
       <div class="pb-5 mb-5 text-center text-gray-500 border-b border-gray-200">
         <img
           class="w-20 h-20 m-auto mb-4 rounded-full"
-          src="../assets/avatar.jpg"
+          :src="getProfileUrl()"
           alt="Avatar"
         />
         <h3 class="text-xl font-bold tracking-tight text-gray-900">
-          Jonas Vleminckx
+          {{ authStore.user?.displayName }}
         </h3>
-        <p class="font-light text-gray-500">vleminckx.jonas@gmail.com</p>
+        <p class="font-light text-gray-500">{{ authStore.user?.email }}</p>
         <button
           class="px-5 text-sm font-medium text-gray-900 py-2.5 bg-white border-gray-200 border rounded-lg justify-center align-center w-full inline-flex mt-5 hover:text-primary-700 focus:ring-4 focus:outline-none focus:ring-gray-200 focus:z-10"
           @click="onLogoutClicked"
