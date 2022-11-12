@@ -1,7 +1,22 @@
-import { push, ref, set, update, remove, child, get } from "firebase/database";
+import {
+  push,
+  ref,
+  set,
+  update,
+  remove,
+  child,
+  get,
+  increment,
+} from "firebase/database";
 
 import { database } from "@/configs/firebase";
-import type { Member, STATUS, Vote } from "@/common/interfaces";
+import {
+  STATUS,
+  TYPE,
+  type Member,
+  type Option,
+  type Vote,
+} from "@/common/interfaces";
 import { useAuthStore } from "@/stores/auth";
 
 const authStore = useAuthStore();
@@ -23,10 +38,17 @@ export const createVote = async (vote: Vote) => {
     creationDate: vote.creationDate.getTime(),
     status: vote.status,
     type: vote.type,
+    creator: authStore.user!.uid,
   });
   for (const optionId of optionIds) {
     await set(
       ref(database, `votes/${newVoteRef.key}/options/${optionId}`),
+      true
+    );
+  }
+  for (const memberId of vote.members!) {
+    await set(
+      ref(database, `votes/${newVoteRef.key}/members/${memberId}`),
       true
     );
   }
@@ -45,6 +67,30 @@ export const updateVote = async (vote: Vote) => {
     status: vote.status,
     type: vote.type,
   });
+};
+
+export const getVote = async (voteId: string) => {
+  let vote: Vote = {
+    name: "",
+    creationDate: new Date(),
+    status: STATUS.CREATED,
+    type: TYPE.SINGLE,
+  };
+  await get(ref(database, `votes/${voteId}`)).then((snapshot) => {
+    if (snapshot.exists()) {
+      const snapshotVal = snapshot.val();
+      vote = {
+        id: voteId,
+        name: snapshotVal.name,
+        creationDate: snapshotVal.creationDate,
+        status: snapshotVal.status as STATUS,
+        type: snapshotVal.type as TYPE,
+        options: snapshotVal.options,
+        members: snapshotVal.members,
+      };
+    }
+  });
+  return vote;
 };
 
 export const setStatus = async (voteId: string, status: STATUS) => {
@@ -89,4 +135,67 @@ export const deleteMember = async (memberId: string) => {
   ).then(() => {
     return remove(ref(database, `members/${memberId}`));
   });
+};
+
+export const getOptions = async (optionIds: string[]) => {
+  const options: Option[] = [];
+  for (const optionId of optionIds) {
+    await get(ref(database, `options/${optionId}`)).then((snapshot) => {
+      if (snapshot.exists()) {
+        const newOption: Option = {
+          id: optionId,
+          label: snapshot.val().label,
+        };
+        options.push(newOption);
+      }
+    });
+  }
+  return options;
+};
+
+export const submitOption = async (
+  voter: string,
+  voteId: string,
+  options: string[]
+) => {
+  const votedForRef = ref(database, `members/${voter}/votedFor/${voteId}`);
+  await get(votedForRef).then(async (snapshot) => {
+    if (!snapshot.exists()) {
+      for (const optionId of options) {
+        await set(votedForRef, true);
+        await set(ref(database, `options/${optionId}/nrOfVotes`), increment(1));
+      }
+    } else {
+      throw new Error("This person has already voted.");
+    }
+  });
+};
+
+export const getUserMembers = async () => {
+  let members: string[] = [];
+  await get(ref(database, `users/${authStore.user?.uid}/members`)).then(
+    (snapshot) => {
+      if (snapshot.exists()) {
+        members = Object.keys(snapshot.val());
+      }
+    }
+  );
+  return members;
+};
+
+export const getMembers = async (memberIds: string[]) => {
+  const members: Member[] = [];
+  for (const memberId of memberIds) {
+    await get(ref(database, `members/${memberId}`)).then((snapshot) => {
+      if (snapshot.exists()) {
+        const newMember: Member = {
+          id: memberId,
+          firstName: snapshot.val().firstName,
+          lastName: snapshot.val().lastName,
+        };
+        members.push(newMember);
+      }
+    });
+  }
+  return members;
 };

@@ -20,7 +20,13 @@ export interface Vote {
   status: STATUS;
   type: TYPE;
   options?: string[];
+  members?: string[];
   selected?: boolean;
+}
+
+export interface Option {
+  id?: string;
+  label: string;
 }
 
 export interface Member {
