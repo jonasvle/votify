@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, type Ref } from "vue";
 import { useRoute } from "vue-router";
-import {
-  getMembers,
-  getOptions,
-  getVote,
-  submitOption,
-} from "@/services/dbServices";
+import { getOptions, getVote, submitOption } from "@/services/dbServices";
 import { TYPE, type Member, type Option, type Vote } from "@/common/interfaces";
 import InlineErrorNotification from "@/components/InlineErrorNotification.vue";
+import { onValue, ref as dbRef } from "@firebase/database";
+import { database } from "@/configs/firebase";
 
 const route = useRoute();
 
@@ -20,12 +17,12 @@ const gettingData = ref(false);
 const submitted = ref(false);
 const error = ref("");
 const options: Ref<Option[]> = ref([]);
-// TODO compute eligible voters and show respectively
-const members: Ref<Member[]> = ref([]);
+const members: Ref<{ [key: string]: Member }> = ref({});
 const vote: Ref<Vote | null> = ref(null);
 const voter = ref("");
 const radioOption = ref("");
 const checkboxOptions: Ref<string[]> = ref([]);
+const filteredMembers: Ref<Member[]> = ref([]);
 
 const closeDropdown = (e: Event) => {
   if (
@@ -36,8 +33,8 @@ const closeDropdown = (e: Event) => {
   }
 };
 
-const onClick = (id: string, value: string) => {
-  dropdownInputRef.value!.value = value;
+const selectMember = (id: string, firstName: string, lastName: string) => {
+  dropdownInputRef.value!.value = `${firstName} ${lastName}`;
   voter.value = id;
 };
 
@@ -62,6 +59,37 @@ const onSubmit = async () => {
   isLoading.value = false;
 };
 
+const updateFilter = () => {
+  const membersArray = Object.keys(members.value).map(
+    (key) => members.value[key]
+  );
+
+  filteredMembers.value = dropdownInputRef.value?.value
+    ? membersArray.filter((member) => {
+        const filterTerms = dropdownInputRef.value?.value.split(" ");
+        return filterTerms?.every((term) => {
+          return (
+            member.firstName.toLowerCase().indexOf(term.toLowerCase()) !== -1 ||
+            member.lastName.toLowerCase().indexOf(term.toLowerCase()) !== -1
+          );
+        });
+      })
+    : membersArray;
+};
+
+const setMember = () => {
+  if (filteredMembers.value.length === 1) {
+    selectMember(
+      filteredMembers.value[0].id!,
+      filteredMembers.value[0].firstName,
+      filteredMembers.value[0].lastName
+    );
+  } else {
+    dropdownInputRef.value!.value = "";
+    updateFilter();
+  }
+};
+
 onMounted(async () => {
   document.addEventListener("click", closeDropdown);
   gettingData.value = true;
@@ -71,9 +99,23 @@ onMounted(async () => {
     await getOptions(Object.keys(v.options!)).then((o) => {
       options.value = o;
     });
-    await getMembers(Object.keys(v.members!)).then((m) => {
-      members.value = m;
-    });
+    for (const memberId of Object.keys(v.members!)) {
+      onValue(dbRef(database, `members/${memberId}`), (snapshot) => {
+        if (snapshot.exists()) {
+          members.value[memberId] = {
+            id: memberId,
+            firstName: snapshot.val().firstName,
+            lastName: snapshot.val().lastName,
+          };
+          if (snapshot.val().votedFor) {
+            members.value[memberId].votedFor = Object.keys(
+              snapshot.val().votedFor
+            );
+          }
+          updateFilter();
+        }
+      });
+    }
   });
   gettingData.value = false;
 });
@@ -168,7 +210,9 @@ onUnmounted(() => {
                 placeholder="I will vote as"
                 autocomplete="off"
                 required
+                @keyup="updateFilter"
                 @focus="showDropdown = true"
+                @blur="setMember"
               />
               <button
                 ref="dropdownButtonRef"
@@ -187,22 +231,44 @@ onUnmounted(() => {
               </button>
 
               <div
-                class="absolute z-10 w-full translate-y-2 bg-white rounded shadow"
+                class="absolute z-10 w-full overflow-auto translate-y-2 bg-white rounded shadow max-h-40"
                 v-show="showDropdown"
               >
                 <ul class="py-1 text-sm text-gray-700">
-                  <li v-for="member in members" :key="member.id">
+                  <li v-for="member in filteredMembers" :key="member.id">
                     <button
                       @click="
-                        onClick(
+                        selectMember(
                           member.id!,
-                          `${member.firstName} ${member.lastName}`
+                          member.firstName,
+                          member.lastName
                         )
                       "
                       type="button"
                       class="w-full px-4 py-2 text-left hover:bg-gray-100"
+                      :disabled="member.votedFor?.includes(route.params.voteId as string)"
                     >
-                      {{ member.firstName }} {{ member.lastName }}
+                      <div
+                        v-if="member.votedFor?.includes(route.params.voteId as string)"
+                        class="flex justify-between"
+                      >
+                        <span class="text-gray-400">
+                          {{ member.firstName }} {{ member.lastName }}
+                        </span>
+                        <font-awesome-icon
+                          class="w-4 h-4 text-green-500"
+                          icon="fa-solid fa-check"
+                        />
+                      </div>
+                      <div v-else>
+                        <span>
+                          {{ member.firstName }} {{ member.lastName }}
+                        </span>
+                      </div>
+
+                      <!-- {{
+                        member.votedFor?.includes(route.params.voteId as string)
+                      }} -->
                     </button>
                   </li>
                 </ul>

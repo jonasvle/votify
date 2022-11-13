@@ -192,6 +192,7 @@ export const getMembers = async (memberIds: string[]) => {
           id: memberId,
           firstName: snapshot.val().firstName,
           lastName: snapshot.val().lastName,
+          votedFor: Object.keys(snapshot.val().votedFor),
         };
         members.push(newMember);
       }

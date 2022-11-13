@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faArrowRightFromBracket,
   faCaretDown,
+  faCheck,
   faCheckToSlot,
   faChevronDown,
   faChevronUp,
@@ -33,6 +34,7 @@ import "./assets/main.css";
 library.add(
   faArrowRightFromBracket,
   faCaretDown,
+  faCheck,
   faCheckToSlot,
   faChevronDown,
   faChevronUp,
