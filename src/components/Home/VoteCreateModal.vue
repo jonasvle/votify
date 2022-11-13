@@ -4,7 +4,7 @@ import { ref, type Ref } from "vue";
 import InlineErrorNotification from "@/components/InlineErrorNotification.vue";
 import { STATUS, TYPE, type Vote } from "@/common/interfaces";
 import { getDateString } from "@/common/utils";
-import { createVote } from "@/services/dbServices";
+import { createVote, getUserMembers } from "@/services/dbServices";
 
 const showModal = ref(false);
 
@@ -25,7 +25,7 @@ const isLoading = ref(false);
 const error = ref("");
 const formRef: Ref<HTMLFormElement | null> = ref(null);
 
-const onSubmit = () => {
+const onSubmit = async () => {
   isLoading.value = true;
   const formData = new FormData(formRef.value!);
   const options: string[] = [];
@@ -35,12 +35,15 @@ const onSubmit = () => {
     }
   }
 
+  const members = await getUserMembers();
+
   const newVote: Vote = {
     name: formData.get("name") as string,
     creationDate: new Date(),
     status: formData.get("status") as STATUS,
     type: formData.get("type") as TYPE,
     options: options,
+    members: members,
   };
 
   createVote(newVote)

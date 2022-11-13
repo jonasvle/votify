@@ -63,6 +63,10 @@ const router = createRouter({
       ],
       beforeEnter: checkLoggedOut,
     },
+    {
+      path: "/vote/:voteId",
+      component: () => import("@/views/VoteView.vue"),
+    },
   ],
 });
 
