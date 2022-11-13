@@ -182,21 +182,3 @@ export const getUserMembers = async () => {
   );
   return members;
 };
-
-export const getMembers = async (memberIds: string[]) => {
-  const members: Member[] = [];
-  for (const memberId of memberIds) {
-    await get(ref(database, `members/${memberId}`)).then((snapshot) => {
-      if (snapshot.exists()) {
-        const newMember: Member = {
-          id: memberId,
-          firstName: snapshot.val().firstName,
-          lastName: snapshot.val().lastName,
-          votedFor: Object.keys(snapshot.val().votedFor),
-        };
-        members.push(newMember);
-      }
-    });
-  }
-  return members;
-};
