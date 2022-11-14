@@ -265,10 +265,6 @@ onUnmounted(() => {
                           {{ member.firstName }} {{ member.lastName }}
                         </span>
                       </div>
-
-                      <!-- {{
-                        member.votedFor?.includes(route.params.voteId as string)
-                      }} -->
                     </button>
                   </li>
                 </ul>

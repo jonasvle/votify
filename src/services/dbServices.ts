@@ -165,6 +165,7 @@ export const submitOption = async (
         await set(votedForRef, true);
         await set(ref(database, `options/${optionId}/nrOfVotes`), increment(1));
       }
+      await set(ref(database, `votes/${voteId}/totalNrOfVotes`), increment(1));
     } else {
       throw new Error("This person has already voted.");
     }

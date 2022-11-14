@@ -67,6 +67,7 @@ const statusColor = () => {
         type="button"
         data-model-toggle="voteEditModal"
         class="font-medium text-primary-600 hover:underline"
+        v-if="vote.status === STATUS.CREATED"
       >
         Edit
       </button>

@@ -8,6 +8,7 @@ import DropdownButtonItem from "@/components/DropdownButtonItem.vue";
 import Search from "@/components/Search.vue";
 import VoteTableRow from "@/components/Home/VoteTableRow.vue";
 import VoteEditModal from "@/components/Home/VoteEditModal.vue";
+import VoteViewModal from "@/components/Home/VoteViewModal.vue";
 import PopupModal from "@/components/PopupModal.vue";
 import { STATUS, type TYPE, type Vote } from "@/common/interfaces";
 import { database } from "@/configs/firebase";
@@ -102,8 +103,10 @@ const openVoteEditModal = (vote: Vote) => {
   voteEditModalRef.value?.openModal(vote);
 };
 
-const openVoteViewModal = () => {
-  console.log("opening view modal...");
+const voteViewModalRef: Ref<typeof VoteViewModal | null> = ref(null);
+
+const openVoteViewModal = (vote: Vote) => {
+  voteViewModalRef.value?.openModal(vote);
 };
 
 const selectAllRef = ref(null);
@@ -270,6 +273,7 @@ const deleteVotes = () => {
       </div>
     </div>
     <VoteEditModal ref="voteEditModalRef" />
+    <VoteViewModal ref="voteViewModalRef" />
     <PopupModal
       ref="popupModalRef"
       message="Are you sure you want to delete the selected votes?"

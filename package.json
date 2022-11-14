@@ -19,6 +19,7 @@
     "firebase": "^9.12.1",
     "flowbite": "^1.5.3",
     "pinia": "^2.0.21",
+    "qrcode.vue": "^3.3.3",
     "vue": "^3.2.38",
     "vue-router": "^4.1.5"
   },
