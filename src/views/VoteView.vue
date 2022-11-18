@@ -2,7 +2,13 @@
 import { onMounted, onUnmounted, ref, type Ref } from "vue";
 import { useRoute } from "vue-router";
 import { getOptions, getVote, submitOption } from "@/services/dbServices";
-import { TYPE, type Member, type Option, type Vote } from "@/common/interfaces";
+import {
+  STATUS,
+  TYPE,
+  type Member,
+  type Option,
+  type Vote,
+} from "@/common/interfaces";
 import InlineErrorNotification from "@/components/InlineErrorNotification.vue";
 import { onValue, ref as dbRef } from "@firebase/database";
 import { database } from "@/configs/firebase";
@@ -14,6 +20,7 @@ const dropdownButtonRef: Ref<HTMLButtonElement | null> = ref(null);
 const showDropdown = ref(false);
 const isLoading = ref(false);
 const gettingData = ref(false);
+const disableVote = ref(false);
 const submitted = ref(false);
 const error = ref("");
 const options: Ref<Option[]> = ref([]);
@@ -46,13 +53,19 @@ const onSubmit = async () => {
       ? [radioOption.value]
       : checkboxOptions.value;
   if (options.length > 0) {
-    await submitOption(voter.value, vote.value?.id!, options)
-      .then(() => {
-        submitted.value = true;
-      })
-      .catch((e: Error) => {
-        error.value = e.message;
-      });
+    await getVote(route.params.voteId as string).then(async (v) => {
+      if (v.status === STATUS.ACTIVE) {
+        await submitOption(voter.value, vote.value?.id!, options)
+          .then(() => {
+            submitted.value = true;
+          })
+          .catch((e: Error) => {
+            error.value = e.message;
+          });
+      } else {
+        disableVote.value = true;
+      }
+    });
   } else {
     error.value = "Select at least one option.";
   }
@@ -96,25 +109,29 @@ onMounted(async () => {
 
   await getVote(route.params.voteId as string).then(async (v) => {
     vote.value = v;
-    await getOptions(Object.keys(v.options!)).then((o) => {
-      options.value = o;
-    });
-    for (const memberId of Object.keys(v.members!)) {
-      onValue(dbRef(database, `members/${memberId}`), (snapshot) => {
-        if (snapshot.exists()) {
-          members.value[memberId] = {
-            id: memberId,
-            firstName: snapshot.val().firstName,
-            lastName: snapshot.val().lastName,
-          };
-          if (snapshot.val().votedFor) {
-            members.value[memberId].votedFor = Object.keys(
-              snapshot.val().votedFor
-            );
-          }
-          updateFilter();
-        }
+    if (vote.value.status === STATUS.ACTIVE) {
+      await getOptions(Object.keys(v.options!)).then((o) => {
+        options.value = o;
       });
+      for (const memberId of Object.keys(v.members!)) {
+        onValue(dbRef(database, `members/${memberId}`), (snapshot) => {
+          if (snapshot.exists()) {
+            members.value[memberId] = {
+              id: memberId,
+              firstName: snapshot.val().firstName,
+              lastName: snapshot.val().lastName,
+            };
+            if (snapshot.val().votedFor) {
+              members.value[memberId].votedFor = Object.keys(
+                snapshot.val().votedFor
+              );
+            }
+            updateFilter();
+          }
+        });
+      }
+    } else {
+      disableVote.value = true;
     }
   });
   gettingData.value = false;
@@ -131,7 +148,10 @@ onUnmounted(() => {
       <h1 class="mb-6 text-3xl font-semibold text-gray-900">
         {{ vote?.name }}
       </h1>
-      <p v-if="submitted" class="text-lg font-light text-gray-500">
+      <p v-if="disableVote" class="text-lg font-light text-gray-500">
+        This vote is closed
+      </p>
+      <p v-else-if="submitted" class="text-lg font-light text-gray-500">
         Your vote has been submitted
       </p>
       <div v-else-if="gettingData" role="status">
@@ -265,10 +285,6 @@ onUnmounted(() => {
                           {{ member.firstName }} {{ member.lastName }}
                         </span>
                       </div>
-
-                      <!-- {{
-                        member.votedFor?.includes(route.params.voteId as string)
-                      }} -->
                     </button>
                   </li>
                 </ul>

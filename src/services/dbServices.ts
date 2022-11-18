@@ -137,6 +137,16 @@ export const deleteMember = async (memberId: string) => {
   });
 };
 
+export const getVoteOptions = async (voteId: string) => {
+  let options: string[] = [];
+  await get(ref(database, `votes/${voteId}/options`)).then((snapshot) => {
+    if (snapshot.exists()) {
+      options = Object.keys(snapshot.val());
+    }
+  });
+  return options;
+};
+
 export const getOptions = async (optionIds: string[]) => {
   const options: Option[] = [];
   for (const optionId of optionIds) {
@@ -145,6 +155,7 @@ export const getOptions = async (optionIds: string[]) => {
         const newOption: Option = {
           id: optionId,
           label: snapshot.val().label,
+          nrOfVotes: snapshot.val().nrOfVotes,
         };
         options.push(newOption);
       }
@@ -165,6 +176,7 @@ export const submitOption = async (
         await set(votedForRef, true);
         await set(ref(database, `options/${optionId}/nrOfVotes`), increment(1));
       }
+      await set(ref(database, `votes/${voteId}/totalNrOfVotes`), increment(1));
     } else {
       throw new Error("This person has already voted.");
     }
