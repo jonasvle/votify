@@ -61,13 +61,13 @@ const statusColor = () => {
         {{ vote.status }}
       </div>
     </td>
-    <td class="flex items-center px-6 py-4 space-x-3">
+    <td class="flex items-center px-6 py-4">
       <button
         @click="$emit('editClicked', vote)"
         type="button"
         data-model-toggle="voteEditModal"
         class="font-medium text-primary-600 hover:underline"
-        v-if="vote.status === STATUS.CREATED"
+        v-show="vote.status === STATUS.CREATED"
       >
         Edit
       </button>
@@ -76,7 +76,7 @@ const statusColor = () => {
         type="button"
         data-model-toggle="voteViewModal"
         class="font-medium text-primary-600 hover:underline"
-        v-if="vote.status !== STATUS.CREATED"
+        v-show="vote.status !== STATUS.CREATED"
       >
         View
       </button>
