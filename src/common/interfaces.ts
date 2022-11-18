@@ -22,11 +22,13 @@ export interface Vote {
   options?: string[];
   members?: string[];
   selected?: boolean;
+  totalNrOfVotes?: number;
 }
 
 export interface Option {
   id?: string;
   label: string;
+  nrOfVotes?: number;
 }
 
 export interface Member {

@@ -137,6 +137,16 @@ export const deleteMember = async (memberId: string) => {
   });
 };
 
+export const getVoteOptions = async (voteId: string) => {
+  let options: string[] = [];
+  await get(ref(database, `votes/${voteId}/options`)).then((snapshot) => {
+    if (snapshot.exists()) {
+      options = Object.keys(snapshot.val());
+    }
+  });
+  return options;
+};
+
 export const getOptions = async (optionIds: string[]) => {
   const options: Option[] = [];
   for (const optionId of optionIds) {
@@ -145,6 +155,7 @@ export const getOptions = async (optionIds: string[]) => {
         const newOption: Option = {
           id: optionId,
           label: snapshot.val().label,
+          nrOfVotes: snapshot.val().nrOfVotes,
         };
         options.push(newOption);
       }

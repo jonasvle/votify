@@ -1,28 +1,44 @@
 <script setup lang="ts">
 import { ref, type Ref } from "vue";
-import { ref as dbRef } from "@firebase/database";
+import { onValue, ref as dbRef } from "@firebase/database";
 import QrcodeVue from "qrcode.vue";
 
-import type { Vote } from "@/common/interfaces";
-import { onValue } from "@firebase/database";
+import BarChart from "@/components/BarChart.vue";
+import { STATUS, type Option, type Vote } from "@/common/interfaces";
 import { database } from "@/configs/firebase";
+import { getOptions, getVoteOptions } from "@/services/dbServices";
 
 const voteInFocus: Ref<Vote | null> = ref(null);
 const showModal = ref(false);
 const voteUrl = ref("");
 const totalNrOfVotes = ref(0);
+const chartData = ref({
+  labels: [] as string[],
+  data: [] as number[],
+});
 
-const openModal = (vote: Vote) => {
+const openModal = async (vote: Vote) => {
   voteInFocus.value = vote;
-  voteUrl.value = `${window.location.origin}/vote/${voteInFocus.value?.id}`;
-  onValue(
-    dbRef(database, `votes/${voteInFocus.value?.id}/totalNrOfVotes`),
-    (snapshot) => {
-      if (snapshot.exists()) {
-        totalNrOfVotes.value = snapshot.val() as number;
+  if (voteInFocus.value.status === STATUS.ACTIVE) {
+    voteUrl.value = `${window.location.origin}/vote/${voteInFocus.value?.id}`;
+    onValue(
+      dbRef(database, `votes/${voteInFocus.value?.id}/totalNrOfVotes`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          totalNrOfVotes.value = snapshot.val() as number;
+        }
       }
-    }
-  );
+    );
+  } else if (voteInFocus.value.status === STATUS.CLOSED) {
+    const options = await getOptions(
+      await getVoteOptions(voteInFocus.value.id!)
+    );
+    chartData.value = {
+      labels: options.map((option) => option.label),
+      data: options.map((option) => option.nrOfVotes!),
+    };
+  }
+
   showModal.value = true;
 };
 
@@ -63,7 +79,10 @@ defineExpose({
               <font-awesome-icon class="w-5 h-5" icon="fa-solid fa-xmark" />
             </button>
           </div>
-          <div class="flex flex-col items-center gap-6 p-6">
+          <div
+            v-if="voteInFocus?.status === STATUS.ACTIVE"
+            class="flex flex-col items-center gap-6 p-6"
+          >
             <qrcode-vue
               :size="300"
               render-as="canvas"
@@ -73,6 +92,16 @@ defineExpose({
             <p class="text-lg font-light text-gray-500">
               People voted: {{ totalNrOfVotes }}
             </p>
+          </div>
+          <div v-else class="flex flex-col items-center gap-6 p-6">
+            <BarChart :data="chartData" />
+            <!-- <p
+              v-for="option in options"
+              :key="option.id"
+              class="text-lg font-light text-gray-500"
+            >
+              {{ option.label }}: {{ option.nrOfVotes }}
+            </p> -->
           </div>
         </div>
       </div>
