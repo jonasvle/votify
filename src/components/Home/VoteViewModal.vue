@@ -6,7 +6,12 @@ import QrcodeVue from "qrcode.vue";
 import BarChart from "@/components/BarChart.vue";
 import { STATUS, type Option, type Vote } from "@/common/interfaces";
 import { database } from "@/configs/firebase";
-import { getOptions, getVoteOptions } from "@/services/dbServices";
+import {
+  getOptions,
+  getTotalNrOfVotes,
+  getVoteOptions,
+} from "@/services/dbServices";
+import { roundToTwoDecimals } from "@/common/utils";
 
 const voteInFocus: Ref<Vote | null> = ref(null);
 const showModal = ref(false);
@@ -16,6 +21,7 @@ const chartData = ref({
   labels: [] as string[],
   data: [] as number[],
 });
+const options: Ref<Option[]> = ref([]);
 
 const openModal = async (vote: Vote) => {
   voteInFocus.value = vote;
@@ -30,12 +36,13 @@ const openModal = async (vote: Vote) => {
       }
     );
   } else if (voteInFocus.value.status === STATUS.CLOSED) {
-    const options = await getOptions(
+    totalNrOfVotes.value = await getTotalNrOfVotes(voteInFocus.value.id!);
+    options.value = await getOptions(
       await getVoteOptions(voteInFocus.value.id!)
     );
     chartData.value = {
-      labels: options.map((option) => option.label),
-      data: options.map((option) => option.nrOfVotes!),
+      labels: options.value.map((option) => option.label),
+      data: options.value.map((option) => option.nrOfVotes!),
     };
   }
 
@@ -93,15 +100,22 @@ defineExpose({
               People voted: {{ totalNrOfVotes }}
             </p>
           </div>
-          <div v-else class="flex flex-col items-center gap-6 p-6">
-            <BarChart :data="chartData" />
-            <!-- <p
+          <div v-else class="flex flex-col p-6">
+            <BarChart class="self-center pb-3" :data="chartData" />
+            <p class="font-light text-gray-500">
+              Total votes: {{ totalNrOfVotes }}
+            </p>
+            <p
               v-for="option in options"
               :key="option.id"
-              class="text-lg font-light text-gray-500"
+              class="font-light text-gray-500"
             >
-              {{ option.label }}: {{ option.nrOfVotes }}
-            </p> -->
+              {{
+                `${option.label}: ${option.nrOfVotes} (${roundToTwoDecimals(
+                  ((option.nrOfVotes || 0) * 100) / totalNrOfVotes
+                )}%)`
+              }}
+            </p>
           </div>
         </div>
       </div>
