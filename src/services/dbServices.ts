@@ -147,6 +147,18 @@ export const getVoteOptions = async (voteId: string) => {
   return options;
 };
 
+export const getTotalNrOfVotes = async (voteId: string) => {
+  let totalNrOfVotes = 0;
+  await get(ref(database, `votes/${voteId}/totalNrOfVotes`)).then(
+    (snapshot) => {
+      if (snapshot.exists()) {
+        totalNrOfVotes = snapshot.val();
+      }
+    }
+  );
+  return totalNrOfVotes;
+};
+
 export const getOptions = async (optionIds: string[]) => {
   const options: Option[] = [];
   for (const optionId of optionIds) {
