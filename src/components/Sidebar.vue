@@ -10,7 +10,7 @@ const pages = [
   {
     name: "Votes",
     icon: "fa-solid fa-check-to-slot",
-    to: "/",
+    to: "/home",
   },
   {
     name: "Members",

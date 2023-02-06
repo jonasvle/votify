@@ -184,6 +184,14 @@ const deleteVotes = () => {
     });
   });
 };
+
+const activateVote = (vote: Vote) => {
+  setStatus(vote.id!, STATUS.ACTIVE);
+};
+
+const closeVote = (vote: Vote) => {
+  setStatus(vote.id!, STATUS.CLOSED);
+};
 </script>
 
 <template>
@@ -262,6 +270,8 @@ const deleteVotes = () => {
             @checked-changed="updateSelected"
             @edit-clicked="openVoteEditModal"
             @view-clicked="openVoteViewModal"
+            @activate-clicked="activateVote"
+            @close-clicked="closeVote"
           />
         </tbody>
       </table>

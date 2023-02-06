@@ -14,7 +14,13 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["checkedChanged", "editClicked", "viewClicked"]);
+const emit = defineEmits([
+  "checkedChanged",
+  "editClicked",
+  "viewClicked",
+  "activateClicked",
+  "closeClicked",
+]);
 
 const checkedChanged = (event: Event) => {
   emit(
@@ -61,7 +67,7 @@ const statusColor = () => {
         {{ vote.status }}
       </div>
     </td>
-    <td class="flex items-center px-6 py-4">
+    <td class="flex items-center gap-3 px-6 py-4">
       <button
         @click="$emit('editClicked', vote)"
         type="button"
@@ -79,6 +85,22 @@ const statusColor = () => {
         v-show="vote.status !== STATUS.CREATED"
       >
         View
+      </button>
+      <button
+        @click="$emit('activateClicked', vote)"
+        type="button"
+        class="font-medium text-primary-600 hover:underline"
+        v-show="vote.status === STATUS.CREATED"
+      >
+        Activate
+      </button>
+      <button
+        @click="$emit('closeClicked', vote)"
+        type="button"
+        class="font-medium text-primary-600 hover:underline"
+        v-show="vote.status === STATUS.ACTIVE"
+      >
+        Close
       </button>
     </td>
   </tr>

@@ -27,10 +27,20 @@ const router = createRouter({
   routes: [
     {
       path: "/",
+      name: "landing",
+      component: () => import("@/views/LandingView.vue"),
+    },
+    {
+      path: "/vote/:voteId",
+      name: "vote",
+      component: () => import("@/views/VoteView.vue"),
+    },
+    {
+      path: "/",
       component: () => import("@/views/AuthenticatedView.vue"),
       children: [
         {
-          path: "",
+          path: "home",
           name: "home",
           component: () => import("@/views/HomeView.vue"),
           meta: { title: "Home" },
@@ -62,10 +72,6 @@ const router = createRouter({
         },
       ],
       beforeEnter: checkLoggedOut,
-    },
-    {
-      path: "/vote/:voteId",
-      component: () => import("@/views/VoteView.vue"),
     },
   ],
 });

@@ -8,6 +8,7 @@ import { STATUS, type Option, type Vote } from "@/common/interfaces";
 import { database } from "@/configs/firebase";
 import {
   getOptions,
+  getSequence,
   getTotalNrOfVotes,
   getVoteOptions,
 } from "@/services/dbServices";
@@ -16,6 +17,7 @@ import { roundToTwoDecimals } from "@/common/utils";
 const voteInFocus: Ref<Vote | null> = ref(null);
 const showModal = ref(false);
 const voteUrl = ref("");
+const voteSequence = ref(0);
 const totalNrOfVotes = ref(0);
 const chartData = ref({
   labels: [] as string[],
@@ -35,6 +37,7 @@ const openModal = async (vote: Vote) => {
         }
       }
     );
+    voteSequence.value = await getSequence(vote.id!);
   } else if (voteInFocus.value.status === STATUS.CLOSED) {
     totalNrOfVotes.value = await getTotalNrOfVotes(voteInFocus.value.id!);
     options.value = await getOptions(
@@ -90,6 +93,9 @@ defineExpose({
             v-if="voteInFocus?.status === STATUS.ACTIVE"
             class="flex flex-col items-center gap-6 p-6"
           >
+            <h1 class="text-4xl font-bold text-gray-900">
+              {{ voteSequence }}
+            </h1>
             <qrcode-vue
               :size="300"
               render-as="canvas"

@@ -5,7 +5,7 @@ defineProps({
 </script>
 
 <template>
-  <div v-if="error" class="flex">
+  <div v-if="error">
     <div
       v-if="error"
       class="flex items-center p-4 text-sm text-red-700 bg-red-100 rounded-lg"
