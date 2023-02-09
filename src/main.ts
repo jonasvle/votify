@@ -10,6 +10,7 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faArrowRightFromBracket,
+  faBars,
   faCaretDown,
   faCheck,
   faCheckToSlot,
@@ -33,6 +34,7 @@ import "./assets/main.css";
 
 library.add(
   faArrowRightFromBracket,
+  faBars,
   faCaretDown,
   faCheck,
   faCheckToSlot,

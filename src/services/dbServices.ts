@@ -53,6 +53,10 @@ export const createVote = async (vote: Vote) => {
     );
   }
 
+  if (vote.status === STATUS.ACTIVE) {
+    setSequence(newVoteRef.key!);
+  }
+
   return set(
     ref(database, `users/${authStore.user!.uid}/votes/${newVoteRef.key}`),
     true
@@ -60,6 +64,9 @@ export const createVote = async (vote: Vote) => {
 };
 
 export const updateVote = async (vote: Vote) => {
+  if (vote.status === STATUS.ACTIVE) {
+    setSequence(vote.id!);
+  }
   const voteRef = ref(database, `votes/${vote.id}`);
   return update(voteRef, {
     name: vote.name,
@@ -93,11 +100,58 @@ export const getVote = async (voteId: string) => {
   return vote;
 };
 
+const generateUniqueSequence = (
+  existingValues: Array<number> | undefined
+): number => {
+  let uniqueSequence = Math.floor(100000 + Math.random() * 900000);
+  existingValues?.forEach((sequence) => {
+    if (uniqueSequence === sequence) {
+      uniqueSequence = generateUniqueSequence(existingValues);
+    }
+  });
+  return uniqueSequence;
+};
+
+const setSequence = async (voteId: string) => {
+  const newLinkRef = ref(database, `links/${voteId}`);
+  get(ref(database, "links")).then((snapshot) => {
+    const uniqueSequence = generateUniqueSequence(
+      snapshot.exists() ? Object.values(snapshot.val()) : undefined
+    );
+    set(newLinkRef, uniqueSequence);
+  });
+};
+
 export const setStatus = async (voteId: string, status: STATUS) => {
+  if (status === STATUS.ACTIVE) {
+    setSequence(voteId);
+  } else {
+    remove(ref(database, `links/${voteId}`));
+  }
+
   const voteRef = ref(database, `votes/${voteId}`);
   return update(voteRef, {
     status: status,
   });
+};
+
+export const getSequence = async (voteId: string): Promise<number> => {
+  let sequence = 0;
+  await get(ref(database, `links/${voteId}`)).then((snapshot) => {
+    if (snapshot.exists()) {
+      sequence = snapshot.val() as number;
+    }
+  });
+  return sequence;
+};
+
+export const getVoteId = async (voteSequence: number): Promise<string> => {
+  let voteId = "";
+  await get(ref(database, "links")).then((snapshot) => {
+    const ids = snapshot.exists() ? Object.keys(snapshot.val()) : undefined;
+    voteId = ids?.find((id) => snapshot.val()[id] === voteSequence) || "";
+  });
+  return voteId;
 };
 
 export const deleteVote = async (voteId: string) => {
@@ -114,6 +168,7 @@ export const deleteVote = async (voteId: string) => {
       });
     }
   );
+  remove(ref(database, `links/${voteId}`));
 };
 
 export const createMember = async (member: Member) => {

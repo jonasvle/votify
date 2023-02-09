@@ -103,17 +103,27 @@ const setMember = () => {
   }
 };
 
-onMounted(async () => {
-  document.addEventListener("click", closeDropdown);
+onValue(dbRef(database, `votes/${route.params.voteId}`), async (snapshot) => {
+  disableVote.value = false;
   gettingData.value = true;
 
-  await getVote(route.params.voteId as string).then(async (v) => {
-    vote.value = v;
+  if (snapshot.exists()) {
+    const snapshotVal = snapshot.val();
+    vote.value = {
+      id: route.params.voteId as string,
+      name: snapshotVal.name,
+      creationDate: snapshotVal.creationDate,
+      status: snapshotVal.status as STATUS,
+      type: snapshotVal.type as TYPE,
+      options: snapshotVal.options,
+      members: snapshotVal.members,
+    };
+
     if (vote.value.status === STATUS.ACTIVE) {
-      await getOptions(Object.keys(v.options!)).then((o) => {
+      await getOptions(Object.keys(vote.value.options!)).then((o) => {
         options.value = o;
       });
-      for (const memberId of Object.keys(v.members!)) {
+      for (const memberId of Object.keys(vote.value.members!)) {
         onValue(dbRef(database, `members/${memberId}`), (snapshot) => {
           if (snapshot.exists()) {
             members.value[memberId] = {
@@ -133,8 +143,12 @@ onMounted(async () => {
     } else {
       disableVote.value = true;
     }
-  });
-  gettingData.value = false;
+    gettingData.value = false;
+  }
+});
+
+onMounted(async () => {
+  document.addEventListener("click", closeDropdown);
 });
 
 onUnmounted(() => {
