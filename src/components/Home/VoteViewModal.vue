@@ -4,7 +4,7 @@ import { onValue, ref as dbRef } from "@firebase/database";
 import QrcodeVue from "qrcode.vue";
 
 import BarChart from "@/components/BarChart.vue";
-import { STATUS, type Option, type Vote } from "@/common/interfaces";
+import { STATUS, type Option, type Vote, TYPE } from "@/common/interfaces";
 import { database } from "@/configs/firebase";
 import {
   getOptions,
@@ -18,6 +18,7 @@ const voteInFocus: Ref<Vote | null> = ref(null);
 const showModal = ref(false);
 const voteUrl = ref("");
 const voteSequence = ref(0);
+const totalNrOfVoters = ref(0);
 const totalNrOfVotes = ref(0);
 const chartData = ref({
   labels: [] as string[],
@@ -33,13 +34,13 @@ const openModal = async (vote: Vote) => {
       dbRef(database, `votes/${voteInFocus.value?.id}/totalNrOfVotes`),
       (snapshot) => {
         if (snapshot.exists()) {
-          totalNrOfVotes.value = snapshot.val() as number;
+          totalNrOfVoters.value = snapshot.val() as number;
         }
       }
     );
     voteSequence.value = await getSequence(vote.id!);
   } else if (voteInFocus.value.status === STATUS.CLOSED) {
-    totalNrOfVotes.value = await getTotalNrOfVotes(voteInFocus.value.id!);
+    totalNrOfVoters.value = await getTotalNrOfVotes(voteInFocus.value.id!);
     options.value = await getOptions(
       await getVoteOptions(voteInFocus.value.id!)
     );
@@ -47,6 +48,13 @@ const openModal = async (vote: Vote) => {
       labels: options.value.map((option) => option.label),
       data: options.value.map((option) => option.nrOfVotes!),
     };
+    if (voteInFocus.value.type === TYPE.MULTI) {
+      options.value.forEach((option) => {
+        totalNrOfVotes.value += option.nrOfVotes || 0;
+      });
+    } else {
+      totalNrOfVotes.value = totalNrOfVoters.value;
+    }
   }
 
   showModal.value = true;
@@ -55,7 +63,7 @@ const openModal = async (vote: Vote) => {
 const closeModal = () => {
   voteInFocus.value = null;
   voteUrl.value = "";
-  totalNrOfVotes.value = 0;
+  totalNrOfVoters.value = 0;
   showModal.value = false;
 };
 
@@ -103,14 +111,14 @@ defineExpose({
               :value="voteUrl"
             />
             <p class="text-lg font-light text-gray-500">
-              People voted: {{ totalNrOfVotes }}
+              People voted: {{ totalNrOfVoters }}
             </p>
           </div>
-          <div v-else-if="totalNrOfVotes > 0" class="flex flex-col p-6">
+          <div v-else-if="totalNrOfVoters > 0" class="flex flex-col p-6">
             <BarChart class="self-center pb-3" :data="chartData" />
             <div class="flex flex-col m-auto">
               <p class="font-light text-gray-500">
-                Total votes: {{ totalNrOfVotes }}
+                Total votes: {{ totalNrOfVoters }}
               </p>
               <p
                 v-for="option in options"

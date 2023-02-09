@@ -119,7 +119,6 @@ const setSequence = async (voteId: string) => {
       snapshot.exists() ? Object.values(snapshot.val()) : undefined
     );
     set(newLinkRef, uniqueSequence);
-    console.log("setting to sequence:", uniqueSequence);
   });
 };
 
