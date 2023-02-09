@@ -53,6 +53,10 @@ export const createVote = async (vote: Vote) => {
     );
   }
 
+  if (vote.status === STATUS.ACTIVE) {
+    setSequence(newVoteRef.key!);
+  }
+
   return set(
     ref(database, `users/${authStore.user!.uid}/votes/${newVoteRef.key}`),
     true
@@ -60,6 +64,9 @@ export const createVote = async (vote: Vote) => {
 };
 
 export const updateVote = async (vote: Vote) => {
+  if (vote.status === STATUS.ACTIVE) {
+    setSequence(vote.id!);
+  }
   const voteRef = ref(database, `votes/${vote.id}`);
   return update(voteRef, {
     name: vote.name,
@@ -105,15 +112,20 @@ const generateUniqueSequence = (
   return uniqueSequence;
 };
 
+const setSequence = async (voteId: string) => {
+  const newLinkRef = ref(database, `links/${voteId}`);
+  get(ref(database, "links")).then((snapshot) => {
+    const uniqueSequence = generateUniqueSequence(
+      snapshot.exists() ? Object.values(snapshot.val()) : undefined
+    );
+    set(newLinkRef, uniqueSequence);
+    console.log("setting to sequence:", uniqueSequence);
+  });
+};
+
 export const setStatus = async (voteId: string, status: STATUS) => {
   if (status === STATUS.ACTIVE) {
-    const newLinkRef = ref(database, `links/${voteId}`);
-    get(ref(database, "links")).then((snapshot) => {
-      const uniqueSequence = generateUniqueSequence(
-        snapshot.exists() ? Object.values(snapshot.val()) : undefined
-      );
-      set(newLinkRef, uniqueSequence);
-    });
+    setSequence(voteId);
   } else {
     remove(ref(database, `links/${voteId}`));
   }
@@ -157,6 +169,7 @@ export const deleteVote = async (voteId: string) => {
       });
     }
   );
+  remove(ref(database, `links/${voteId}`));
 };
 
 export const createMember = async (member: Member) => {

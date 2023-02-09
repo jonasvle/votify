@@ -12,7 +12,7 @@ const openCreateModal = () => {
 </script>
 
 <template>
-  <div class="max-w-screen-lg p-8 m-auto">
+  <div>
     <section class="flex justify-between mb-4 text-gray-500 sm:text-lg">
       <h2 class="mb-4 text-4xl font-bold tracking-tight text-gray-900">
         Members

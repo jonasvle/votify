@@ -6,6 +6,10 @@ import placeholder from "../assets/avatar.jpg";
 const router = useRouter();
 const authStore = useAuthStore();
 
+defineProps({
+  show: Boolean,
+});
+
 const pages = [
   {
     name: "Votes",
@@ -32,15 +36,36 @@ const getProfileUrl = () => {
 </script>
 
 <template>
-  <aside class="fixed top-0 left-0 flex h-full" aria-label="Sidebar">
+  <div
+    class="fixed top-0 left-0 right-0 z-40 h-full bg-black bg-opacity-50 lg:hidden"
+  ></div>
+  <aside
+    class="fixed top-0 left-0 z-50 flex h-full lg:block"
+    aria-label="Sidebar"
+  >
     <div
       class="w-64 h-full px-3 py-5 overflow-y-auto bg-white border-r border-gray-200"
     >
-      <router-link class="flex pl-2 mb-5 align-center" to="/">
-        <span class="self-center text-2xl font-semibold whitespace-nowrap">
-          Votify
-        </span>
-      </router-link>
+      <div class="flex content-center mb-5">
+        <router-link
+          @click="$emit('closeSidebar')"
+          class="flex pl-2"
+          to="/home"
+        >
+          <span class="self-center text-2xl font-semibold whitespace-nowrap">
+            Votify
+          </span>
+        </router-link>
+        <button
+          @click="$emit('closeSidebar')"
+          type="button"
+          class="lg:hidden text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
+        >
+          <font-awesome-icon class="w-5 h-5" icon="fa-solid fa-xmark" />
+          <span class="sr-only">Close modal</span>
+        </button>
+      </div>
+
       <div class="pb-5 mb-5 text-center text-gray-500 border-b border-gray-200">
         <img
           class="w-20 h-20 m-auto mb-4 rounded-full"
@@ -65,6 +90,7 @@ const getProfileUrl = () => {
       <ul class="space-y-2">
         <li v-for="page in pages" :key="page.name">
           <router-link
+            @click="$emit('closeSidebar')"
             exact-active-class="text-white bg-primary-600"
             class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-primary-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-primary-300"
             :to="page.to"

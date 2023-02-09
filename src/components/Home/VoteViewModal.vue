@@ -106,21 +106,31 @@ defineExpose({
               People voted: {{ totalNrOfVotes }}
             </p>
           </div>
-          <div v-else class="flex flex-col p-6">
+          <div v-else-if="totalNrOfVotes > 0" class="flex flex-col p-6">
             <BarChart class="self-center pb-3" :data="chartData" />
+            <div class="flex flex-col m-auto">
+              <p class="font-light text-gray-500">
+                Total votes: {{ totalNrOfVotes }}
+              </p>
+              <p
+                v-for="option in options"
+                :key="option.id"
+                class="font-light text-gray-500"
+              >
+                {{
+                  `${option.label}: ${
+                    option.nrOfVotes || 0
+                  } (${roundToTwoDecimals(
+                    ((option.nrOfVotes || 0) * 100) / totalNrOfVotes
+                  )}%)`
+                }}
+              </p>
+            </div>
+          </div>
+          <div v-else class="p-6">
             <p class="font-light text-gray-500">
-              Total votes: {{ totalNrOfVotes }}
-            </p>
-            <p
-              v-for="option in options"
-              :key="option.id"
-              class="font-light text-gray-500"
-            >
-              {{
-                `${option.label}: ${option.nrOfVotes} (${roundToTwoDecimals(
-                  ((option.nrOfVotes || 0) * 100) / totalNrOfVotes
-                )}%)`
-              }}
+              There have been no votes registered for
+              <i>{{ voteInFocus?.name }}</i>
             </p>
           </div>
         </div>
