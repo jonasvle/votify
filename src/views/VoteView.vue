@@ -147,39 +147,9 @@ onValue(dbRef(database, `votes/${route.params.voteId}`), async (snapshot) => {
   }
 });
 
-// onMounted(async () => {
-//   document.addEventListener("click", closeDropdown);
-//   gettingData.value = true;
-
-//   await getVote(route.params.voteId as string).then(async (v) => {
-//     vote.value = v;
-//     if (vote.value.status === STATUS.ACTIVE) {
-//       await getOptions(Object.keys(v.options!)).then((o) => {
-//         options.value = o;
-//       });
-//       for (const memberId of Object.keys(v.members!)) {
-//         onValue(dbRef(database, `members/${memberId}`), (snapshot) => {
-//           if (snapshot.exists()) {
-//             members.value[memberId] = {
-//               id: memberId,
-//               firstName: snapshot.val().firstName,
-//               lastName: snapshot.val().lastName,
-//             };
-//             if (snapshot.val().votedFor) {
-//               members.value[memberId].votedFor = Object.keys(
-//                 snapshot.val().votedFor
-//               );
-//             }
-//             updateFilter();
-//           }
-//         });
-//       }
-//     } else {
-//       disableVote.value = true;
-//     }
-//   });
-//   gettingData.value = false;
-// });
+onMounted(async () => {
+  document.addEventListener("click", closeDropdown);
+});
 
 onUnmounted(() => {
   document.removeEventListener("click", closeDropdown);
