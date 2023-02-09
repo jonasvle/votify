@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, type Ref } from "vue";
+import moment from "moment";
 
 import InlineErrorNotification from "@/components/InlineErrorNotification.vue";
 import { STATUS, TYPE, type Vote } from "@/common/interfaces";
@@ -31,7 +32,10 @@ const onSubmit = (event: Event) => {
   const updatedVote: Vote = {
     id: voteInFocus.value?.id,
     name: formData.get("name") as string,
-    creationDate: new Date(formData.get("creationDate") as string),
+    creationDate: moment(
+      formData.get("creationDate") as string,
+      "DD/MM/YYYY"
+    ).toDate(),
     status: formData.get("status") as STATUS,
     type: formData.get("type") as TYPE,
     options: voteInFocus.value?.options,
