@@ -105,7 +105,7 @@ defineExpose({
               {{ voteSequence }}
             </h1>
             <qrcode-vue
-              :size="300"
+              :size="200"
               render-as="canvas"
               level="L"
               :value="voteUrl"
