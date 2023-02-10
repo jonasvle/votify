@@ -36,24 +36,28 @@ const onSubmit = async () => {
   }
 
   const members = await getUserMembers();
+  if (members.length > 0) {
+    const newVote: Vote = {
+      name: formData.get("name") as string,
+      creationDate: new Date(),
+      status: formData.get("status") as STATUS,
+      type: formData.get("type") as TYPE,
+      options: options,
+      members: members,
+    };
 
-  const newVote: Vote = {
-    name: formData.get("name") as string,
-    creationDate: new Date(),
-    status: formData.get("status") as STATUS,
-    type: formData.get("type") as TYPE,
-    options: options,
-    members: members,
-  };
-
-  createVote(newVote)
-    .then(() => {
-      closeModal();
-    })
-    .catch(() => {
-      isLoading.value = false;
-      error.value = "Failed to create a new vote. Please try again later.";
-    });
+    createVote(newVote)
+      .then(() => {
+        closeModal();
+      })
+      .catch(() => {
+        isLoading.value = false;
+        error.value = "Failed to create a new vote. Please try again later.";
+      });
+  } else {
+    isLoading.value = false;
+    error.value = "Make sure you add members before creating a vote.";
+  }
 };
 
 defineExpose({
