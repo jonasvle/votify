@@ -5,6 +5,7 @@ import "flowbite";
 import App from "./App.vue";
 import router from "./router";
 import "./configs/firebase";
+import "./registerServiceWorker.js";
 
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";

@@ -52,9 +52,7 @@ const getProfileUrl = () => {
           class="flex pl-2"
           to="/home"
         >
-          <span class="self-center text-2xl font-semibold whitespace-nowrap">
-            Votify
-          </span>
+          <img class="w-28" src="@/assets/logo.svg" alt="Votify" />
         </router-link>
         <button
           @click="$emit('closeSidebar')"
