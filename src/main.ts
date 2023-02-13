@@ -1,6 +1,8 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 import "flowbite";
+import ScriptX from "vue-scriptx";
+import Ads from "vue-google-adsense";
 
 import App from "./App.vue";
 import router from "./router";
@@ -58,6 +60,8 @@ const app = createApp(App);
 
 app.use(createPinia());
 app.use(router);
+app.use(ScriptX);
+app.use(Ads.Adsense);
 app.component("font-awesome-icon", FontAwesomeIcon);
 
 app.mount("#app");
