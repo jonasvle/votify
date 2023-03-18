@@ -24,12 +24,12 @@ const disableVote = ref(false);
 const submitted = ref(false);
 const error = ref("");
 const options: Ref<Option[]> = ref([]);
-const members: Ref<{ [key: string]: Member }> = ref({});
 const vote: Ref<Vote | null> = ref(null);
 const voter = ref("");
 const radioOption = ref("");
 const checkboxOptions: Ref<string[]> = ref([]);
 const filteredMembers: Ref<Member[]> = ref([]);
+const members: { [key: string]: Member } = {};
 
 const closeDropdown = (e: Event) => {
   if (
@@ -73,9 +73,7 @@ const onSubmit = async () => {
 };
 
 const updateFilter = () => {
-  const membersArray = Object.keys(members.value).map(
-    (key) => members.value[key]
-  );
+  const membersArray = Object.keys(members).map((key) => members[key]);
 
   filteredMembers.value = dropdownInputRef.value?.value
     ? membersArray.filter((member) => {
@@ -103,49 +101,88 @@ const setMember = () => {
   }
 };
 
-onValue(dbRef(database, `votes/${route.params.voteId}`), async (snapshot) => {
-  disableVote.value = false;
-  gettingData.value = true;
-
-  if (snapshot.exists()) {
-    const snapshotVal = snapshot.val();
-    vote.value = {
-      id: route.params.voteId as string,
-      name: snapshotVal.name,
-      creationDate: snapshotVal.creationDate,
-      status: snapshotVal.status as STATUS,
-      type: snapshotVal.type as TYPE,
-      options: snapshotVal.options,
-      members: snapshotVal.members,
-    };
-
-    if (vote.value.status === STATUS.ACTIVE) {
-      await getOptions(Object.keys(vote.value.options!)).then((o) => {
-        options.value = o;
-      });
-      for (const memberId of Object.keys(vote.value.members!)) {
-        onValue(dbRef(database, `members/${memberId}`), (snapshot) => {
-          if (snapshot.exists()) {
-            members.value[memberId] = {
-              id: memberId,
-              firstName: snapshot.val().firstName,
-              lastName: snapshot.val().lastName,
-            };
-            if (snapshot.val().votedFor) {
-              members.value[memberId].votedFor = Object.keys(
-                snapshot.val().votedFor
-              );
+disableVote.value = false;
+gettingData.value = true;
+getVote(route.params.voteId as string).then((v) => {
+  if (v.id) {
+    vote.value = v;
+    onValue(
+      dbRef(database, `votes/${route.params.voteId}/status`),
+      async (snapshot) => {
+        if (snapshot.exists() && vote.value) {
+          vote.value.status = snapshot.val();
+          if (vote.value.status === STATUS.ACTIVE) {
+            await getOptions(Object.keys(vote.value.options!)).then((o) => {
+              options.value = o;
+            });
+            for (const memberId of Object.keys(vote.value.members!)) {
+              onValue(dbRef(database, `members/${memberId}`), (snapshot) => {
+                if (snapshot.exists()) {
+                  members[memberId] = {
+                    id: memberId,
+                    firstName: snapshot.val().firstName,
+                    lastName: snapshot.val().lastName,
+                  };
+                  if (snapshot.val().votedFor) {
+                    members[memberId].votedFor = Object.keys(
+                      snapshot.val().votedFor
+                    );
+                  }
+                  updateFilter();
+                }
+              });
             }
-            updateFilter();
+          } else {
+            disableVote.value = true;
           }
-        });
+          gettingData.value = false;
+        }
       }
-    } else {
-      disableVote.value = true;
-    }
-    gettingData.value = false;
+    );
   }
 });
+
+// onValue(dbRef(database, `votes/${route.params.voteId}`), async (snapshot) => {
+//   disableVote.value = false;
+//   gettingData.value = true;
+
+//   if (snapshot.exists()) {
+//     const snapshotVal = snapshot.val();
+//     vote.value = {
+//       id: route.params.voteId as string,
+//       name: snapshotVal.name,
+//       creationDate: snapshotVal.creationDate,
+//       status: snapshotVal.status as STATUS,
+//       type: snapshotVal.type as TYPE,
+//       options: snapshotVal.options,
+//       members: snapshotVal.members,
+//     };
+
+//     if (vote.value.status === STATUS.ACTIVE) {
+//       await getOptions(Object.keys(vote.value.options!)).then((o) => {
+//         options.value = o;
+//       });
+//       for (const memberId of Object.keys(vote.value.members!)) {
+//         onValue(dbRef(database, `members/${memberId}`), (snapshot) => {
+//           if (snapshot.exists()) {
+//             members[memberId] = {
+//               id: memberId,
+//               firstName: snapshot.val().firstName,
+//               lastName: snapshot.val().lastName,
+//             };
+//             if (snapshot.val().votedFor) {
+//               members[memberId].votedFor = Object.keys(snapshot.val().votedFor);
+//             }
+//             updateFilter();
+//           }
+//         });
+//       }
+//     } else {
+//       disableVote.value = true;
+//     }
+//     gettingData.value = false;
+//   }
+// });
 
 onMounted(async () => {
   document.addEventListener("click", closeDropdown);
