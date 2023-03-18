@@ -40,11 +40,11 @@ const props = defineProps({
   },
   width: {
     type: Number,
-    default: 300,
+    default: 400,
   },
   height: {
     type: Number,
-    default: 300,
+    default: 400,
   },
 });
 

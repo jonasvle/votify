@@ -82,7 +82,7 @@ defineExpose({
     role="dialog"
     v-show="showModal"
   >
-    <div class="w-full h-full max-w-md p-4 m-auto">
+    <div class="w-full h-full max-w-xl p-4 m-auto">
       <div class="pb-6">
         <div class="bg-white rounded-lg shadow">
           <div class="flex items-start justify-between p-4 border-b rounded-t">
@@ -105,8 +105,9 @@ defineExpose({
               {{ voteSequence }}
             </h1>
             <qrcode-vue
-              :size="200"
-              render-as="canvas"
+              style="max-width: 100%"
+              :size="400"
+              render-as="svg"
               level="L"
               :value="voteUrl"
             />

@@ -142,48 +142,6 @@ getVote(route.params.voteId as string).then((v) => {
   }
 });
 
-// onValue(dbRef(database, `votes/${route.params.voteId}`), async (snapshot) => {
-//   disableVote.value = false;
-//   gettingData.value = true;
-
-//   if (snapshot.exists()) {
-//     const snapshotVal = snapshot.val();
-//     vote.value = {
-//       id: route.params.voteId as string,
-//       name: snapshotVal.name,
-//       creationDate: snapshotVal.creationDate,
-//       status: snapshotVal.status as STATUS,
-//       type: snapshotVal.type as TYPE,
-//       options: snapshotVal.options,
-//       members: snapshotVal.members,
-//     };
-
-//     if (vote.value.status === STATUS.ACTIVE) {
-//       await getOptions(Object.keys(vote.value.options!)).then((o) => {
-//         options.value = o;
-//       });
-//       for (const memberId of Object.keys(vote.value.members!)) {
-//         onValue(dbRef(database, `members/${memberId}`), (snapshot) => {
-//           if (snapshot.exists()) {
-//             members[memberId] = {
-//               id: memberId,
-//               firstName: snapshot.val().firstName,
-//               lastName: snapshot.val().lastName,
-//             };
-//             if (snapshot.val().votedFor) {
-//               members[memberId].votedFor = Object.keys(snapshot.val().votedFor);
-//             }
-//             updateFilter();
-//           }
-//         });
-//       }
-//     } else {
-//       disableVote.value = true;
-//     }
-//     gettingData.value = false;
-//   }
-// });
-
 onMounted(async () => {
   document.addEventListener("click", closeDropdown);
 });
