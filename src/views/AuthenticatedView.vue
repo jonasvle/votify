@@ -19,7 +19,7 @@ const closeSidebar = () => {
     @closeSidebar="closeSidebar"
     :show="showSidebar"
   />
-  <section class="w-full" :class="{ 'lg:ml-64': showSidebar }">
+  <section :class="{ 'lg:ml-64': showSidebar }">
     <main class="max-w-screen-lg p-8 m-auto bg-gray-50">
       <button
         @click="toggleSidebar"

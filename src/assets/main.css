@@ -4,7 +4,6 @@
 
 #app {
   height: 100vh;
-  display: flex;
   background-color: rgb(249 250 251);
   overflow-x: hidden;
 }
